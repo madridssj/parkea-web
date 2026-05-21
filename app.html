@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <link rel="manifest" href="manifest.json"/>
-  <meta name="theme-color" content="#FFE118"/>
+  <meta name="theme-color" content="#0A0A0A"/>
   <meta name="mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
@@ -15,43 +15,82 @@
   <style>
     *{box-sizing:border-box;margin:0;padding:0;}
     body{background:#0A0A0A;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;display:flex;flex-direction:column;}
-    .screen{flex:1;overflow-y:auto;padding:0 16px 90px;display:none;}
+
+    /* Screens */
+    .screen{flex:1;overflow-y:auto;padding:0 16px 96px;display:none;}
     .screen.active{display:block;}
 
-    /* Tabbar */
-    .tabbar{position:fixed;bottom:0;left:0;right:0;background:#111;border-top:1px solid #2C2C2C;display:flex;align-items:center;justify-content:space-around;padding:8px 0 22px;z-index:100;}
-    .tb-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 0;}
-    .tb-icon{font-size:20px;opacity:0.35;transition:opacity 0.2s;}
-    .tb-label{font-size:9px;color:#555;letter-spacing:0.5px;font-weight:700;text-transform:uppercase;}
-    .tb-item.active .tb-icon{opacity:1;}
-    .tb-item.active .tb-label{background:linear-gradient(90deg,#A8E063,#56CCF2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    /* ── TAB BAR (igual que Android) ── */
+    .tabbar{
+      position:fixed;bottom:0;left:0;right:0;
+      background:#0A0A0A;
+      border-top:1px solid #1A1A1A;
+      display:flex;align-items:flex-end;justify-content:space-around;
+      padding:10px 8px 28px;
+      z-index:100;
+    }
+    .tb-item{
+      flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;
+      cursor:pointer;padding:2px 0;
+    }
+    .tb-icon{display:flex;align-items:center;justify-content:center;width:28px;height:28px;}
+    .tb-icon svg{width:24px;height:24px;fill:none;stroke:#444;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:stroke 0.2s;}
+    .tb-label{font-size:9px;color:#444;letter-spacing:0.3px;font-weight:600;transition:color 0.2s;}
+    .tb-item.active .tb-icon svg{stroke:#FFFFFF;}
+    .tb-item.active .tb-label{color:#FFFFFF;}
+
+    /* Botón central scanner */
+    .tb-center{
+      flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;
+      cursor:pointer;padding:2px 0;margin-bottom:10px;
+    }
+    .tb-center-btn{
+      width:56px;height:56px;border-radius:16px;
+      background:linear-gradient(135deg,#A8E063,#56CCF2);
+      display:flex;align-items:center;justify-content:center;
+      box-shadow:0 4px 16px #56CCF244;
+    }
+    .tb-center-btn svg{width:26px;height:26px;fill:none;stroke:#0A0A0A;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+    .tb-center-lbl{font-size:9px;color:#444;letter-spacing:0.3px;font-weight:600;}
 
     /* Header */
-    .header{display:flex;justify-content:space-between;align-items:center;padding:52px 0 16px;}
+    .header{display:flex;justify-content:space-between;align-items:center;padding:56px 0 16px;}
     .h-sub{color:#555;font-size:10px;letter-spacing:2px;text-transform:uppercase;}
     .h-title{color:#FFF;font-size:20px;font-weight:800;margin-top:2px;}
-    .avatar{width:40px;height:40px;border-radius:20px;background:#FFE118;display:flex;align-items:center;justify-content:center;color:#0A0A0A;font-size:16px;font-weight:900;cursor:pointer;flex-shrink:0;}
+    .avatar{width:42px;height:42px;border-radius:21px;background:#FFE118;display:flex;align-items:center;justify-content:center;color:#0A0A0A;font-size:16px;font-weight:900;cursor:pointer;flex-shrink:0;}
 
     /* Cards */
     .card{background:#1A1A1A;border-radius:20px;padding:16px;margin-bottom:12px;border:1px solid #2C2C2C;}
-    .card-dark{background:#202020;border-color:#FFE11833;}
+    .card-timer{background:#202020;border-radius:20px;padding:18px;margin-bottom:14px;border:1.5px solid #FFE11833;box-shadow:0 0 32px #FFE11811;align-items:center;}
     .row{display:flex;justify-content:space-between;align-items:flex-start;}
-    .badge{border-radius:8px;padding:4px 10px;font-size:9px;font-weight:800;letter-spacing:1px;}
-    .badge-green{background:#00C85322;border:1.5px solid #00C85344;color:#00C853;}
-    .badge-blue{background:#1C6EF722;border:1.5px solid #1C6EF744;color:#1C6EF7;}
-    .badge-orange{background:#FF8C0022;border:1.5px solid #FF8C0044;color:#FF8C00;}
     .info-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #1E1E1E;}
     .info-row:last-child{border:none;}
     .info-key{font-size:12px;color:#555;}
     .info-val{font-size:12px;font-weight:600;color:#FFF;}
     .section-lbl{color:#555;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;}
 
+    /* Badges */
+    .badge{border-radius:10px;padding:4px 10px;font-size:10px;font-weight:800;letter-spacing:1px;}
+    .badge-green{background:#00C85322;border:1.5px solid #00C85344;color:#00C853;}
+    .badge-blue{background:#1C6EF722;border:1.5px solid #1C6EF744;color:#1C6EF7;}
+
+    /* Timer */
+    .timer-box{background:#111;border-radius:14px;padding:16px;text-align:center;margin-bottom:12px;border:1px solid #FFE11822;}
+    .timer-lbl{font-size:9px;color:#555;letter-spacing:2px;text-transform:uppercase;margin-bottom:5px;}
+    .timer-txt{color:#FFE118;font-size:46px;font-weight:900;font-family:'Courier New',monospace;letter-spacing:-2px;line-height:1;}
+    .cost-row{display:flex;align-items:baseline;margin-top:12px;justify-content:center;gap:4px;}
+    .cost-lbl{font-size:12px;color:#555;}
+    .cost-val{font-size:26px;font-weight:800;}
+    .courtesy-badge{background:#00C85322;border:1px solid #00C85344;border-radius:8px;padding:4px 12px;display:inline-block;font-size:11px;color:#00C853;font-weight:700;margin-bottom:12px;}
+    .prog-bg{background:#181818;border-radius:5px;height:5px;overflow:hidden;width:100%;margin-top:12px;}
+    .prog-fill{height:100%;border-radius:5px;background:#FFE118;}
+
     /* Home */
     .avail-num{font-size:48px;font-weight:900;line-height:1.1;margin-top:4px;}
-    .avail-total{color:#555;font-size:18px;font-weight:400;}
-    .prog-bg{background:#111;border-radius:5px;height:6px;overflow:hidden;margin-top:12px;}
-    .prog-fill{height:100%;border-radius:5px;transition:width 0.5s;}
-    .realtime{color:#333;font-size:9px;margin-top:6px;text-align:right;letter-spacing:1.5px;}
+    .avail-total{font-size:18px;font-weight:400;color:#555;}
+    .avail-prog-bg{background:#111;border-radius:5px;height:6px;overflow:hidden;margin-top:12px;}
+    .avail-prog-fill{height:100%;border-radius:5px;transition:width 0.5s;}
+    .realtime{color:#333;font-size:9px;margin-top:6px;text-align:right;letter-spacing:1.5px;text-transform:uppercase;}
     .flow-card{background:#1A1A1A;border-radius:16px;padding:16px;margin-bottom:16px;border:1px solid #1C6EF722;}
     .flow-title{color:#1C6EF7;font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;}
     .step{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;}
@@ -60,40 +99,33 @@
     .step-title{color:#FFF;font-size:12px;font-weight:600;}
     .step-desc{color:#555;font-size:10px;margin-top:2px;line-height:1.5;}
     .fares{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
-    .fare-cell{background:#1A1A1A;border-radius:12px;padding:10px 6px;text-align:center;border:1px solid #2C2C2C;}
-    .fare-amt{font-size:15px;font-weight:900;}
-    .fare-unit{color:#FFF;font-size:8px;margin-top:2px;}
-    .fare-lbl{color:#555;font-size:8px;margin-top:2px;}
+    .fare-cell{background:#1A1A1A;border-radius:14px;padding:12px 8px;text-align:center;border:1.5px solid #2C2C2C;}
+    .fare-amt{font-size:18px;font-weight:900;}
+    .fare-unit{color:#FFF;font-size:9px;margin-top:2px;}
+    .fare-lbl{color:#555;font-size:9px;margin-top:2px;}
     .fine-card{background:#1A0808;border-radius:14px;padding:14px;border:1px solid #FF444422;display:flex;align-items:center;gap:12px;margin-bottom:12px;}
     .fine-icon{width:28px;height:28px;border-radius:14px;background:#FF444418;border:1px solid #FF444444;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#FF4444;font-weight:900;font-size:14px;}
     .fine-txt{color:#FF4444;font-size:12px;font-weight:700;}
     .fine-desc{color:#555;font-size:10px;margin-top:2px;}
 
-    /* Ticket */
-    .timer-box{background:#111;border-radius:14px;padding:16px;text-align:center;margin:12px 0;border:1px solid #FFE11822;}
-    .timer-lbl{font-size:8px;color:#555;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
-    .timer-txt{color:#FFE118;font-size:42px;font-weight:900;font-family:'Courier New',monospace;letter-spacing:-1px;}
-    .courtesy-badge{background:#00C85322;border:1px solid #00C85344;border-radius:8px;padding:4px 12px;display:inline-block;font-size:10px;color:#00C853;font-weight:700;margin-top:8px;}
-    .cost-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #222;}
-    .cost-lbl{font-size:12px;color:#555;}
-    .cost-val{font-size:22px;font-weight:900;}
-    .progress-bg{background:#181818;border-radius:5px;height:5px;overflow:hidden;margin-top:10px;}
-    .progress-fill{height:100%;border-radius:5px;background:#FFE118;}
-
-    /* Pay */
-    .pay-form{background:#111;border-radius:18px;padding:16px;margin-bottom:12px;border:1.5px solid #FFE11833;}
-    .pay-form-title{color:#FFE118;font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;}
+    /* Pagar */
+    .pay-summary{background:#202020;border-radius:18px;padding:16px;margin-bottom:14px;border:1.5px solid #FFE11833;}
+    .pay-total-row{display:flex;justify-content:space-between;align-items:center;padding-top:12px;}
+    .pay-total-lbl{color:#FFF;font-size:14px;font-weight:700;}
+    .pay-total-val{font-size:22px;font-weight:900;}
+    .card-indicator{display:flex;align-items:center;gap:14px;background:#1A1A1A;border-radius:14px;padding:16px;margin-bottom:14px;border:1.5px solid #1C6EF733;}
+    .pay-form{background:#1A1A1A;border-radius:18px;padding:16px;margin-bottom:14px;border:1px solid #2C2C2C;}
+    .pay-form-title{color:#555;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;}
     .field{margin-bottom:12px;}
     .field label{display:block;color:#888;font-size:10px;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;}
-    .field input{width:100%;background:#1A1A1A;border:1.5px solid #2C2C2C;border-radius:12px;padding:13px 14px;color:#FFF;font-size:14px;font-weight:600;outline:none;-webkit-appearance:none;}
+    .field input{width:100%;background:#111;border:1.5px solid #2C2C2C;border-radius:12px;padding:14px;color:#FFF;font-size:14px;font-weight:600;outline:none;-webkit-appearance:none;}
     .field input:focus{border-color:#FFE118;}
     .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
     .secure-note{color:#333;font-size:10px;text-align:center;margin-top:8px;}
-    .card-indicator{display:flex;align-items:center;gap:14px;background:#1A1A1A;border-radius:14px;padding:16px;margin-bottom:14px;border:1.5px solid #1C6EF733;}
-    .free-banner{background:#00C85312;border-radius:14px;padding:20px;margin-bottom:12px;border:1.5px solid #00C85333;text-align:center;}
+    .free-banner{background:#00C85312;border-radius:14px;padding:20px;margin-bottom:14px;border:1.5px solid #00C85333;text-align:center;}
 
     /* QR salida */
-    .qr-section{background:#1A1A1A;border-radius:20px;padding:20px;margin-bottom:12px;border:1px solid #2C2C2C;text-align:center;}
+    .qr-card{background:#1A1A1A;border-radius:20px;padding:20px;margin-bottom:14px;border:1px solid #2C2C2C;text-align:center;}
     .qr-lbl{color:#555;font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;}
     .qr-wrap{background:#FFF;border-radius:12px;padding:10px;display:inline-block;margin-bottom:12px;}
     .qr-token{color:#FFE118;font-size:14px;font-weight:700;letter-spacing:2px;}
@@ -114,20 +146,20 @@
     .profile-row{display:flex;align-items:center;gap:14px;}
     .profile-avatar{width:52px;height:52px;border-radius:26px;background:#FFE118;display:flex;align-items:center;justify-content:center;color:#0A0A0A;font-size:20px;font-weight:900;flex-shrink:0;}
 
-    /* Buttons */
-    .btn{width:100%;padding:15px;border-radius:14px;border:none;font-size:15px;font-weight:900;cursor:pointer;margin-bottom:10px;text-align:center;}
+    /* Botones */
+    .btn{width:100%;padding:15px;border-radius:16px;border:none;font-size:15px;font-weight:900;cursor:pointer;margin-bottom:10px;text-align:center;}
     .btn-yellow{background:#FFE118;color:#0A0A0A;box-shadow:0 0 22px #FFE11844;}
     .btn-yellow:disabled{background:#333;color:#666;box-shadow:none;cursor:not-allowed;}
-    .btn-outline{background:transparent;color:#FFF;border:1.5px solid #2C2C2C;}
+    .btn-outline{background:transparent;color:#FFF;border:1px solid #2C2C2C;}
     .btn-red{background:transparent;color:#FF4444;border:1.5px solid #FF444433;}
 
     /* Utils */
     .error-box{background:#FF444415;border-radius:10px;border:1px solid #FF444433;padding:12px;margin-bottom:12px;color:#FF4444;font-size:12px;text-align:center;display:none;}
     .success-box{background:#00C85315;border-radius:10px;border:1px solid #00C85333;padding:12px;margin-bottom:12px;color:#00C853;font-size:12px;text-align:center;display:none;}
     .empty-state{text-align:center;padding:48px 20px;}
-    .empty-icon{width:60px;height:60px;border-radius:30px;background:#FFE11822;border:1.5px solid #FFE11844;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;color:#FFE118;font-size:24px;font-weight:900;}
-    .empty-title{color:#FFF;font-size:16px;font-weight:700;margin-bottom:6px;}
-    .empty-sub{color:#555;font-size:13px;line-height:1.6;}
+    .empty-icon{width:64px;height:64px;border-radius:32px;background:#FFE11822;border:1.5px solid #FFE11844;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:#FFE118;font-size:26px;font-weight:900;}
+    .empty-title{color:#FFF;font-size:18px;font-weight:700;margin-bottom:8px;}
+    .empty-sub{color:#555;font-size:13px;line-height:1.6;text-align:center;}
     .spinner-sm{width:18px;height:18px;border:2px solid #0A0A0A44;border-top:2px solid #0A0A0A;border-radius:50%;animation:spin 0.8s linear infinite;display:inline-block;vertical-align:middle;}
     .spinner-lg{width:36px;height:36px;border:3px solid #222;border-top:3px solid #FFE118;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto;}
     .loading-wrap{text-align:center;padding:48px 20px;}
@@ -140,11 +172,8 @@
 <!-- ══ HOME ══ -->
 <div id="screen-home" class="screen active">
   <div class="header">
-    <div>
-      <div class="h-sub">Bienvenida</div>
-      <div class="h-title" id="home-username">—</div>
-    </div>
-    <div class="avatar" id="avatar-home" onclick="goTab('config')">?</div>
+    <div><div class="h-sub">Bienvenida</div><div class="h-title" id="home-name">—</div></div>
+    <div class="avatar" id="av-home" onclick="goTab('config')">?</div>
   </div>
   <div id="home-content"></div>
 </div>
@@ -152,200 +181,185 @@
 <!-- ══ TICKET ══ -->
 <div id="screen-ticket" class="screen">
   <div class="header">
-    <div>
-      <div class="h-sub">Mi boleto</div>
-      <div class="h-title">Ticket <span style="color:#FFE118">activo</span></div>
-    </div>
-    <div class="avatar" id="avatar-ticket" onclick="goTab('config')">?</div>
+    <div><div class="h-sub">Ticket activo</div><div class="h-title">Mi <span style="color:#FFE118">boleto</span></div></div>
+    <div class="avatar" id="av-ticket" onclick="goTab('config')">?</div>
   </div>
   <div id="ticket-content"></div>
+</div>
+
+<!-- ══ SCAN ══ -->
+<div id="screen-scan" class="screen">
+  <div class="header">
+    <div><div class="h-sub">Registrar entrada</div><div class="h-title">Escanear <span style="color:#FFE118">QR</span></div></div>
+    <div class="avatar" id="av-scan" onclick="goTab('config')">?</div>
+  </div>
+  <div id="scan-content"></div>
 </div>
 
 <!-- ══ HISTORIAL ══ -->
 <div id="screen-history" class="screen">
   <div class="header">
-    <div>
-      <div class="h-sub">Mis visitas</div>
-      <div class="h-title">Historial</div>
-    </div>
-    <div class="avatar" id="avatar-history" onclick="goTab('config')">?</div>
+    <div><div class="h-sub">Mis visitas</div><div class="h-title">Historial</div></div>
+    <div class="avatar" id="av-history" onclick="goTab('config')">?</div>
   </div>
   <div id="history-content"></div>
+</div>
+
+<!-- ══ PAGAR ══ -->
+<div id="screen-pay" class="screen">
+  <div id="pay-content"></div>
 </div>
 
 <!-- ══ CONFIG ══ -->
 <div id="screen-config" class="screen">
   <div class="header">
-    <div>
-      <div class="h-sub">Mi cuenta</div>
-      <div class="h-title">Configuración</div>
-    </div>
+    <div><div class="h-sub">Mi cuenta</div><div class="h-title">Configuración</div></div>
   </div>
   <div id="config-content"></div>
 </div>
 
-<!-- Tab bar -->
+<!-- ══ TAB BAR ══ -->
 <nav class="tabbar">
   <div class="tb-item active" onclick="goTab('home')" id="tb-home">
-    <div class="tb-icon">🏠</div>
+    <div class="tb-icon">
+      <svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H5a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
+    </div>
     <div class="tb-label">Inicio</div>
   </div>
+
   <div class="tb-item" onclick="goTab('ticket')" id="tb-ticket">
-    <div class="tb-icon">🎫</div>
+    <div class="tb-icon">
+      <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M16 2v3M8 2v3M2 10h20"/><circle cx="8" cy="15" r="1" fill="#444"/><circle cx="12" cy="15" r="1" fill="#444"/><circle cx="16" cy="15" r="1" fill="#444"/></svg>
+    </div>
     <div class="tb-label">Ticket</div>
   </div>
+
+  <!-- Botón central scanner -->
+  <div class="tb-center" onclick="goTab('scan')" id="tb-scan">
+    <div class="tb-center-btn">
+      <svg viewBox="0 0 24 24"><path d="M4 7V4h3M17 4h3v3M4 17v3h3M17 20h3v-3"/><rect x="7" y="7" width="4" height="4" rx="1"/><rect x="13" y="7" width="4" height="4" rx="1"/><rect x="7" y="13" width="4" height="4" rx="1"/><rect x="13" y="13" width="4" height="4" rx="1"/></svg>
+    </div>
+    <div class="tb-center-lbl">Escanear</div>
+  </div>
+
   <div class="tb-item" onclick="goTab('history')" id="tb-history">
-    <div class="tb-icon">🕐</div>
+    <div class="tb-icon">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+    </div>
     <div class="tb-label">Historial</div>
   </div>
-  <div class="tb-item" onclick="goTab('config')" id="tb-config">
-    <div class="tb-icon">⚙️</div>
-    <div class="tb-label">Config</div>
+
+  <div class="tb-item" onclick="goTab('pay')" id="tb-pay">
+    <div class="tb-icon">
+      <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M6 15h4"/><circle cx="17" cy="15" r="1.5" fill="#444"/></svg>
+    </div>
+    <div class="tb-label">Pagar</div>
   </div>
 </nav>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
-// ══════════════════════════════════════
-// CONSTANTES Y SESIÓN
-// ══════════════════════════════════════
 const SUPABASE_URL  = 'https://pjpquwrrmjfzdcicvssm.supabase.co';
 const SUPABASE_ANON = 'sb_publishable_vDACoUwPW_ql0KAtqXXF6g_hQbbFdn3';
 const PAYMENT_URL   = `${SUPABASE_URL}/functions/v1/process-payment`;
-const COURTESY=15, FIRST=15, EXTRA=20, MAX_SPOTS=50;
+const COURTESY=15,FIRST=15,EXTRA=20;
 
-let SESSION = null;
-try {
-  const s = JSON.parse(localStorage.getItem('parkea_session')||'null');
-  if(s && s.access_token && s.expires_at > Date.now()/1000) SESSION = s;
-} catch(e){}
+let SESSION=null;
+try{ const s=JSON.parse(localStorage.getItem('parkea_session')||'null'); if(s&&s.access_token&&s.expires_at>Date.now()/1000)SESSION=s; }catch(e){}
 if(!SESSION){ window.location.href='index.html'; }
 
-const USER = SESSION.user;
-const userName = USER?.user_metadata?.full_name || USER?.email?.split('@')[0] || '?';
-const userInitial = userName.charAt(0).toUpperCase();
-
+const USER=SESSION.user;
+const userName=USER?.user_metadata?.full_name||USER?.email?.split('@')[0]||'?';
+const userInitial=userName.charAt(0).toUpperCase();
 document.querySelectorAll('.avatar').forEach(a=>a.textContent=userInitial);
-document.getElementById('home-username').textContent = userName;
+document.getElementById('home-name').textContent=userName;
 
-function authHeaders(){
-  return { 'apikey':SUPABASE_ANON,'Authorization':`Bearer ${SESSION.access_token}`,'Content-Type':'application/json' };
-}
+function authH(){ return{'apikey':SUPABASE_ANON,'Authorization':`Bearer ${SESSION.access_token}`,'Content-Type':'application/json'}; }
+function pad(n){ return String(n).padStart(2,'0'); }
+function calcCost(m){ if(m<=COURTESY)return 0; const b=Math.ceil((m-COURTESY)/60); return FIRST+Math.max(0,b-1)*EXTRA; }
+function mSince(iso){ return Math.floor((Date.now()-new Date(iso).getTime())/60000); }
+function fmtTime(iso){ return new Date(iso).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}); }
+function fmtDate(iso){ return new Date(iso).toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'}); }
+function loadingEl(id){ document.getElementById(id).innerHTML=`<div class="loading-wrap"><div class="spinner-lg"></div><p>Cargando...</p></div>`; }
 
-// ══════════════════════════════════════
-// NAVEGACIÓN
-// ══════════════════════════════════════
-let currentTab = 'home';
+// ── NAVEGACIÓN ──
+let currentTab='home';
+let ticketInterval=null;
+let spotsInterval=null;
+let currentTicket=null;
 
 function goTab(tab){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.tb-item').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tb-item,.tb-center').forEach(t=>t.classList.remove('active'));
   document.getElementById('screen-'+tab).classList.add('active');
   document.getElementById('tb-'+tab).classList.add('active');
-  currentTab = tab;
+  currentTab=tab;
   if(tab==='home')    loadHome();
   if(tab==='ticket')  loadTicket();
+  if(tab==='scan')    loadScan();
   if(tab==='history') loadHistory();
+  if(tab==='pay')     loadPay();
   if(tab==='config')  loadConfig();
 }
 
-// ══════════════════════════════════════
-// UTILS
-// ══════════════════════════════════════
-function pad(n){ return String(n).padStart(2,'0'); }
-function calcCost(mins){ if(mins<=COURTESY)return 0; const b=Math.ceil((mins-COURTESY)/60); return FIRST+Math.max(0,b-1)*EXTRA; }
-function minutesSince(iso){ return Math.floor((Date.now()-new Date(iso).getTime())/60000); }
-function formatTime(iso){ return new Date(iso).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}); }
-function formatDate(iso){ return new Date(iso).toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'}); }
-function loading(elId){ document.getElementById(elId).innerHTML=`<div class="loading-wrap"><div class="spinner-lg"></div><p>Cargando...</p></div>`; }
-
-// ══════════════════════════════════════
-// HOME
-// ══════════════════════════════════════
-let spotsInterval = null;
-let spots = 34;
-
-async function loadHome(){
+// ── HOME ──
+let spots=34;
+function loadHome(){
   if(spotsInterval){ clearInterval(spotsInterval); }
   renderHome();
-  // Simular spots cambiando (hasta conectar datos reales)
-  spotsInterval = setInterval(()=>{
-    spots = Math.max(10, Math.min(50, spots + Math.floor(Math.random()*3)-1));
-    const el = document.getElementById('spots-num');
-    const pct = (spots/50)*100;
-    const color = pct>55?'#00C853':pct>25?'#FF8C00':'#FF4444';
-    if(el){ el.textContent=spots; el.style.color=color; }
-    const pf = document.getElementById('spots-prog');
-    if(pf){ pf.style.width=pct+'%'; pf.style.background=color; }
-    const badge = document.getElementById('spots-badge');
-    if(badge){ badge.textContent=pct>55?'DISPONIBLE':pct>25?'CASI LLENO':'MUY LLENO'; badge.style.color=color; }
-  }, 2800);
+  spotsInterval=setInterval(()=>{
+    spots=Math.max(10,Math.min(50,spots+Math.floor(Math.random()*3)-1));
+    const pct=(spots/50)*100;
+    const c=pct>55?'#00C853':pct>25?'#FF8C00':'#FF4444';
+    const el=document.getElementById('sn'); if(el){el.textContent=spots;el.style.color=c;}
+    const pf=document.getElementById('sp'); if(pf){pf.style.width=pct+'%';pf.style.background=c;}
+    const bl=document.getElementById('sb'); if(bl){bl.textContent=pct>55?'DISPONIBLE':pct>25?'CASI LLENO':'MUY LLENO';bl.style.color=c;bl.style.borderColor=c+'55';bl.style.background=c+'22';}
+  },2800);
 }
-
 function renderHome(){
-  const pct = (spots/50)*100;
-  const color = pct>55?'#00C853':pct>25?'#FF8C00':'#FF4444';
-  const label = pct>55?'DISPONIBLE':pct>25?'CASI LLENO':'MUY LLENO';
-
-  document.getElementById('home-content').innerHTML = `
-    <!-- Disponibilidad -->
-    <div class="card" style="border-color:${color}44;box-shadow:0 4px 24px ${color}18;margin-bottom:16px;">
+  const pct=(spots/50)*100;
+  const c=pct>55?'#00C853':pct>25?'#FF8C00':'#FF4444';
+  const lbl=pct>55?'DISPONIBLE':pct>25?'CASI LLENO':'MUY LLENO';
+  document.getElementById('home-content').innerHTML=`
+    <div class="card" style="border-color:${c}44;box-shadow:0 0 24px ${c}18;margin-bottom:16px;">
       <div class="row">
         <div>
           <div class="section-lbl">Cajones disponibles</div>
-          <div class="avail-num" id="spots-num" style="color:${color}">${spots}<span class="avail-total">/50</span></div>
+          <div class="avail-num"><span id="sn" style="color:${c}">${spots}</span><span class="avail-total">/50</span></div>
         </div>
-        <div class="badge" id="spots-badge" style="background:${color}22;border-color:${color}55;color:${color}">${label}</div>
+        <div class="badge" id="sb" style="background:${c}22;border-color:${c}55;color:${c}">${lbl}</div>
       </div>
-      <div class="prog-bg">
-        <div class="prog-fill" id="spots-prog" style="width:${pct}%;background:${color}"></div>
-      </div>
-      <div class="realtime">EN TIEMPO REAL</div>
+      <div class="avail-prog-bg"><div class="avail-prog-fill" id="sp" style="width:${pct}%;background:${c}"></div></div>
+      <div class="realtime">En tiempo real</div>
     </div>
-
-    <!-- Flujo -->
     <div class="flow-card">
       <div class="flow-title">Flujo del servicio</div>
       <div class="step"><div class="step-num">1</div><div><div class="step-title">Escanea el QR en el tótem</div><div class="step-desc">Tu navegador abre el boleto provisional automáticamente</div></div></div>
       <div class="step"><div class="step-num">2</div><div><div class="step-title">Boleto web — timer corriendo</div><div class="step-desc">Sin instalar nada. El tiempo y costo se actualizan en vivo</div></div></div>
-      <div class="step"><div class="step-num">3</div><div><div class="step-title">Paga desde la app o web</div><div class="step-desc">El pago desbloquea tu QR de salida</div></div></div>
+      <div class="step"><div class="step-num">3</div><div><div class="step-title">Paga desde esta app</div><div class="step-desc">El pago desbloquea tu QR de salida</div></div></div>
       <div class="step"><div class="step-num">4</div><div><div class="step-title">Muestra tu QR de salida</div><div class="step-desc">El tótem lo escanea y quedas liberado</div></div></div>
     </div>
-
-    <!-- Tarifas -->
     <div class="section-lbl" style="margin-bottom:10px;">Tarifas vigentes</div>
     <div class="fares">
       <div class="fare-cell"><div class="fare-amt" style="color:#00C853;">15 min</div><div class="fare-unit">GRATIS</div><div class="fare-lbl">Cortesía</div></div>
       <div class="fare-cell"><div class="fare-amt" style="color:#FFE118;">$15</div><div class="fare-unit">MXN</div><div class="fare-lbl">1ª hora</div></div>
       <div class="fare-cell"><div class="fare-amt" style="color:#1C6EF7;">$20</div><div class="fare-unit">MXN</div><div class="fare-lbl">Hora extra</div></div>
     </div>
-
-    <!-- Multa -->
     <div class="fine-card">
       <div class="fine-icon">!</div>
       <div><div class="fine-txt">Multa por tolerancia excedida</div><div class="fine-desc">+15 min después de pagar — $50 MXN adicionales</div></div>
     </div>`;
 }
 
-// ══════════════════════════════════════
-// TICKET
-// ══════════════════════════════════════
-let ticketInterval = null;
-let currentTicket  = null;
-
+// ── TICKET ──
 async function loadTicket(){
-  loading('ticket-content');
-  if(ticketInterval){ clearInterval(ticketInterval); ticketInterval=null; }
-
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/tickets?user_id=eq.${USER.id}&status=in.(active,paid)&order=entry_at.desc&limit=1`,
-    { headers: authHeaders() }
-  );
-  const data = await res.json();
-  currentTicket = data?.length > 0 ? data[0] : null;
-
-  if(!currentTicket){ renderNoTicket(); return; }
-  if(currentTicket.status==='paid'){ renderPaid(currentTicket); return; }
+  loadingEl('ticket-content');
+  if(ticketInterval){clearInterval(ticketInterval);ticketInterval=null;}
+  const res=await fetch(`${SUPABASE_URL}/rest/v1/tickets?user_id=eq.${USER.id}&status=in.(active,paid)&order=entry_at.desc&limit=1`,{headers:authH()});
+  const data=await res.json();
+  currentTicket=data?.length>0?data[0]:null;
+  if(!currentTicket){renderNoTicket();return;}
+  if(currentTicket.status==='paid'){renderPaid(currentTicket);return;}
   renderActive(currentTicket);
 }
 
@@ -360,72 +374,110 @@ function renderNoTicket(){
 
 function renderActive(ticket){
   document.getElementById('ticket-content').innerHTML=`
-    <div class="card card-dark">
-      <div class="row" style="margin-bottom:4px;">
-        <div>
-          <div style="color:#555;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;">Ticket activo</div>
-          <div style="color:#FFF;font-size:18px;font-weight:800;margin-top:2px;">Cajón <span style="color:#FFE118">${ticket.spot_id??'—'}</span></div>
-        </div>
-        <div class="badge badge-green">● ACTIVO</div>
+    <div class="card-timer">
+      <div class="row" style="margin-bottom:8px;">
+        <div><div class="section-lbl">Ticket activo</div><div style="color:#FFF;font-size:18px;font-weight:700;">Cajón <span style="color:#FFE118">${ticket.spot_id??'—'}</span></div></div>
+        <div class="badge badge-green">ACTIVO</div>
       </div>
-      <div class="timer-box">
-        <div class="timer-lbl">Tiempo en estacionamiento</div>
-        <div class="timer-txt" id="t-timer">00:00:00</div>
-        <div id="t-courtesy"></div>
-      </div>
+      <div id="t-courtesy-wrap"></div>
+      <div class="timer-lbl">Tiempo en estacionamiento</div>
+      <div class="timer-txt" id="t-timer">00:00:00</div>
       <div class="cost-row">
-        <span class="cost-lbl">Costo actual</span>
-        <span id="t-cost" class="cost-val" style="color:#00C853;">$0 <span style="font-size:11px;font-weight:400;color:#555;">MXN</span></span>
+        <span class="cost-lbl">Costo&nbsp;&nbsp;</span>
+        <span id="t-cost" class="cost-val" style="color:#00C853;">$0</span>
+        <span class="cost-lbl">&nbsp;MXN</span>
       </div>
-      <div class="progress-bg"><div class="progress-fill" id="t-prog" style="width:0%"></div></div>
+      <div id="t-breakdown" style="color:#555;font-size:10px;margin-top:6px;text-align:center;"></div>
+      <div class="prog-bg"><div class="prog-fill" id="t-prog" style="width:0%"></div></div>
     </div>
     <div class="card">
       <div class="info-row"><span class="info-key">Token</span><span class="info-val" style="color:#1C6EF7;">${ticket.qr_token??'—'}</span></div>
       <div class="info-row"><span class="info-key">Cajón</span><span class="info-val">${ticket.spot_id??'—'}</span></div>
-      <div class="info-row"><span class="info-key">Entrada</span><span class="info-val">${formatTime(ticket.entry_at)}</span></div>
+      <div class="info-row"><span class="info-key">Entrada</span><span class="info-val">${fmtTime(ticket.entry_at)}</span></div>
       <div class="info-row"><span class="info-key">Placa</span><span class="info-val" style="color:#555;font-style:italic;">${ticket.plate??'PROVISIONAL'}</span></div>
     </div>
-    <button class="btn btn-yellow" id="btn-pay-now" onclick="goPayScreen()">Pagar ahora</button>`;
-
+    <button class="btn btn-yellow" id="btn-pay-now" onclick="goTab('pay')">Pagar ahora</button>`;
   startTimer(ticket);
 }
 
 function startTimer(ticket){
-  if(ticketInterval){ clearInterval(ticketInterval); }
+  if(ticketInterval)clearInterval(ticketInterval);
   function update(){
-    const secs = Math.floor((Date.now()-new Date(ticket.entry_at).getTime())/1000);
-    const mins = Math.floor(secs/60);
-    const hh = Math.floor(mins/60);
-    const el = document.getElementById('t-timer');
-    if(el) el.textContent=`${pad(hh)}:${pad(mins%60)}:${pad(secs%60)}`;
-    const cost = calcCost(mins);
-    const costEl = document.getElementById('t-cost');
-    if(costEl) costEl.innerHTML = mins<=COURTESY
-      ? `<span style="color:#00C853;">$0</span> <span style="font-size:11px;color:#555;">MXN</span>`
-      : `<span style="color:#FFF;">$${cost}</span> <span style="font-size:11px;color:#555;">MXN</span>`;
-    const cEl = document.getElementById('t-courtesy');
-    if(cEl){
-      if(mins<=COURTESY){ cEl.className='courtesy-badge'; cEl.textContent=`${COURTESY-mins} min de cortesía restantes`; cEl.style.display='inline-block'; }
-      else { cEl.style.display='none'; }
-    }
-    const pEl = document.getElementById('t-prog');
-    if(pEl) pEl.style.width=Math.min(100,(secs/5400)*100)+'%';
-    const btn = document.getElementById('btn-pay-now');
-    if(btn) btn.textContent = cost>0 ? `Pagar ahora — $${cost} MXN` : 'Salida gratuita (cortesía)';
+    const secs=Math.floor((Date.now()-new Date(ticket.entry_at).getTime())/1000);
+    const mins=Math.floor(secs/60);
+    const hh=Math.floor(mins/60);
+    const el=document.getElementById('t-timer'); if(el)el.textContent=`${pad(hh)}:${pad(mins%60)}:${pad(secs%60)}`;
+    const cost=calcCost(mins);
+    const costEl=document.getElementById('t-cost'); if(costEl){costEl.textContent=`$${cost}`;costEl.style.color=mins<=COURTESY?'#00C853':'#FFF';}
+    const cw=document.getElementById('t-courtesy-wrap');
+    if(cw) cw.innerHTML=mins<=COURTESY?`<div class="courtesy-badge">Cortesía — ${COURTESY-mins} min gratis restantes</div>`:'';
+    const bd=document.getElementById('t-breakdown');
+    if(bd&&cost>0) bd.textContent=`1 hr × $${FIRST}.00 MXN${cost>FIRST?' + '+Math.round((cost-FIRST)/EXTRA)+' hrs extra × $'+EXTRA+'.00 MXN':''}`;
+    const pEl=document.getElementById('t-prog'); if(pEl)pEl.style.width=Math.min(100,(secs/5400)*100)+'%';
+    const btn=document.getElementById('btn-pay-now'); if(btn)btn.textContent=cost>0?`Pagar ahora — $${cost} MXN`:'Salida gratuita (cortesía)';
   }
   update();
-  ticketInterval = setInterval(update, 1000);
+  ticketInterval=setInterval(update,1000);
 }
 
-// ══════════════════════════════════════
-// PAY (pantalla de pago)
-// ══════════════════════════════════════
-function goPayScreen(){
-  if(ticketInterval){ clearInterval(ticketInterval); ticketInterval=null; }
-  const ticket = currentTicket;
-  const cost = calcCost(minutesSince(ticket.entry_at));
+// ── SCAN ──
+function loadScan(){
+  document.getElementById('scan-content').innerHTML=`
+    <div style="text-align:center;padding:32px 0 24px;">
+      <div style="width:200px;height:200px;border-radius:24px;background:#1A1A1A;border:2px solid #2C2C2C;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;position:relative;">
+        <div style="position:absolute;top:16px;left:16px;width:28px;height:28px;border-top:3px solid #FFE118;border-left:3px solid #FFE118;border-radius:4px;"></div>
+        <div style="position:absolute;top:16px;right:16px;width:28px;height:28px;border-top:3px solid #FFE118;border-right:3px solid #FFE118;border-radius:4px;"></div>
+        <div style="position:absolute;bottom:16px;left:16px;width:28px;height:28px;border-bottom:3px solid #FFE118;border-left:3px solid #FFE118;border-radius:4px;"></div>
+        <div style="position:absolute;bottom:16px;right:16px;width:28px;height:28px;border-bottom:3px solid #FFE118;border-right:3px solid #FFE118;border-radius:4px;"></div>
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="4" height="4" rx="0.5"/>
+          <rect x="18" y="18" width="3" height="3" rx="0.5"/>
+        </svg>
+      </div>
+      <div style="color:#555;font-size:13px;line-height:1.7;margin-bottom:28px;">
+        En la PWA no se puede usar la cámara.<br/>
+        Usa la cámara de tu iPhone para<br/>
+        escanear el QR del cartel.
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:12px;">
+      <div style="color:#555;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;">📥 Entrada</div>
+      <div style="color:#FFF;font-size:13px;line-height:1.7;margin-bottom:14px;">Apunta la cámara de tu iPhone al cartel QR del estacionamiento. Se abrirá el boleto automáticamente.</div>
+      <a href="https://parkea-sa-de-cv.github.io/parkea-web/ticket.html" class="btn btn-yellow" style="display:block;text-decoration:none;text-align:center;">Abrir escáner de iPhone</a>
+    </div>
+    <div class="card">
+      <div style="color:#555;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;">📤 Salida</div>
+      <div style="color:#FFF;font-size:13px;line-height:1.7;">Una vez pagado, tu QR de salida aparece en la pestaña <strong style="color:#FFE118">Ticket</strong>. Muéstralo al tótem.</div>
+    </div>`;
+}
 
-  let formHtml = '';
+// ── PAGAR ──
+async function loadPay(){
+  loadingEl('pay-content');
+  if(!currentTicket){
+    const res=await fetch(`${SUPABASE_URL}/rest/v1/tickets?user_id=eq.${USER.id}&status=in.(active,paid)&order=entry_at.desc&limit=1`,{headers:authH()});
+    const data=await res.json();
+    currentTicket=data?.length>0?data[0]:null;
+  }
+  if(!currentTicket){
+    document.getElementById('pay-content').innerHTML=`
+      <div class="header"><div><div class="h-sub">Checkout</div><div class="h-title">Pagar <span style="color:#FFE118">estancia</span></div></div><div class="avatar" onclick="goTab('config')">${userInitial}</div></div>
+      <div class="empty-state">
+        <div class="empty-icon">💳</div>
+        <div class="empty-title">Sin ticket activo</div>
+        <div class="empty-sub">Escanea el QR del estacionamiento para registrar tu entrada</div>
+      </div>`;
+    return;
+  }
+  if(currentTicket.status==='paid'){ goTab('ticket'); return; }
+  renderPayForm();
+}
+
+function renderPayForm(){
+  const ticket=currentTicket;
+  const cost=calcCost(mSince(ticket.entry_at));
+  let formHtml='';
   if(cost===0){
     formHtml=`<div class="free-banner">
       <div style="font-size:32px;margin-bottom:8px;">🎉</div>
@@ -440,7 +492,7 @@ function goPayScreen(){
         <div style="color:#555;font-size:11px;margin-top:2px;">Débito o crédito · Procesado de forma segura</div></div>
       </div>
       <div class="pay-form">
-        <div class="pay-form-title">💳 Datos de tarjeta</div>
+        <div class="pay-form-title">Datos de tarjeta</div>
         <div class="field"><label>Número de tarjeta</label>
           <input type="tel" id="p-num" placeholder="0000 0000 0000 0000" maxlength="19" inputmode="numeric" oninput="fmtCard(this);chkPay()"/>
         </div>
@@ -458,79 +510,80 @@ function goPayScreen(){
         <div class="secure-note">🔐 Pago seguro · Datos encriptados</div>
       </div>`;
   }
-
-  document.getElementById('ticket-content').innerHTML=`
-    <div style="padding-top:52px;">
-      <div style="color:#555;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;">Checkout</div>
-      <div style="color:#FFF;font-size:20px;font-weight:800;margin-bottom:16px;">Pagar <span style="color:#FFE118">estancia</span></div>
-    </div>
-    <div class="card" style="margin-bottom:14px;">
+  document.getElementById('pay-content').innerHTML=`
+    <div class="header"><div><div class="h-sub">Checkout · Solo en app</div><div class="h-title">Pagar <span style="color:#FFE118">estancia</span></div></div><div class="avatar" onclick="goTab('config')">${userInitial}</div></div>
+    <div class="pay-summary">
       <div class="section-lbl">Resumen</div>
       <div class="info-row"><span class="info-key">Cajón</span><span class="info-val">${ticket.spot_id??'—'}</span></div>
-      <div class="info-row"><span class="info-key">Entrada</span><span class="info-val">${formatTime(ticket.entry_at)}</span></div>
-      <div class="info-row" style="border:none;padding-top:10px;">
-        <span style="color:#FFF;font-size:14px;font-weight:700;">Total</span>
-        <span style="color:${cost===0?'#00C853':'#FFE118'};font-size:22px;font-weight:900;">${cost===0?'GRATIS':'$'+cost+' MXN'}</span>
-      </div>
+      <div class="info-row"><span class="info-key">Entrada</span><span class="info-val">${fmtTime(ticket.entry_at)}</span></div>
+      <div class="info-row"><span class="info-key">Tiempo</span><span class="info-val">${pad(Math.floor(mSince(ticket.entry_at)/60))}h ${pad(mSince(ticket.entry_at)%60)}m</span></div>
+      <div class="pay-total-row"><span class="pay-total-lbl">Total</span><span class="pay-total-val" style="color:${cost===0?'#00C853':'#FFE118'}">${cost===0?'GRATIS':'$'+cost+' MXN'}</span></div>
     </div>
     ${formHtml}
     <div class="error-box" id="pay-err"></div>
     <button class="btn btn-yellow" id="btn-confirm" onclick="confirmPay()" ${cost>0?'disabled':''}>
       ${cost===0?'CONFIRMAR SALIDA GRATUITA':'Completa los datos de tarjeta'}
-    </button>
-    <button class="btn btn-outline" onclick="loadTicket()">← Volver al ticket</button>`;
+    </button>`;
 }
 
 function fmtCard(el){ el.value=el.value.replace(/\D/g,'').slice(0,16).replace(/(.{4})/g,'$1 ').trim(); }
 function fmtExp(el){ const c=el.value.replace(/\D/g,'').slice(0,4); el.value=c.length>=3?c.slice(0,2)+'/'+c.slice(2):c; }
-
 function chkPay(){
-  const num  = (document.getElementById('p-num')?.value||'').replace(/\s/g,'');
-  const name = (document.getElementById('p-name')?.value||'').trim();
-  const exp  = (document.getElementById('p-exp')?.value||'');
-  const cvv  = (document.getElementById('p-cvv')?.value||'');
+  const num=(document.getElementById('p-num')?.value||'').replace(/\s/g,'');
+  const name=(document.getElementById('p-name')?.value||'').trim();
+  const exp=(document.getElementById('p-exp')?.value||'');
+  const cvv=(document.getElementById('p-cvv')?.value||'');
   const [month]=(exp||'/').split('/');
-  const ok = num.length===16&&name.length>2&&exp.length===5&&parseInt(month)>=1&&parseInt(month)<=12&&cvv.length>=3;
+  const ok=num.length===16&&name.length>2&&exp.length===5&&parseInt(month)>=1&&parseInt(month)<=12&&cvv.length>=3;
   const btn=document.getElementById('btn-confirm');
-  if(btn){
-    btn.disabled=!ok;
-    const cost=calcCost(minutesSince(currentTicket.entry_at));
-    btn.textContent=ok?`CONFIRMAR PAGO · $${cost} MXN`:'Completa los datos de tarjeta';
-  }
+  if(btn){btn.disabled=!ok; const cost=calcCost(mSince(currentTicket.entry_at)); btn.textContent=ok?`CONFIRMAR PAGO · $${cost} MXN`:'Completa los datos de tarjeta';}
 }
 
 async function confirmPay(){
   const btn=document.getElementById('btn-confirm');
   const errEl=document.getElementById('pay-err');
-  errEl.style.display='none';
-  btn.disabled=true;
-  btn.innerHTML='<span class="spinner-sm"></span> Procesando...';
-  try {
-    const res=await fetch(PAYMENT_URL,{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':`Bearer ${SESSION.access_token}`},
-      body:JSON.stringify({ticketId:currentTicket.id,paymentMethod:'app'}),
-    });
+  errEl.style.display='none'; btn.disabled=true; btn.innerHTML='<span class="spinner-sm"></span> Procesando...';
+  try{
+    const res=await fetch(PAYMENT_URL,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${SESSION.access_token}`},body:JSON.stringify({ticketId:currentTicket.id,paymentMethod:'app'})});
     const json=await res.json();
-    if(!res.ok){ errEl.textContent=json.error??'Error al procesar pago'; errEl.style.display='block'; btn.disabled=false; chkPay(); return; }
-    const r2=await fetch(`${SUPABASE_URL}/rest/v1/tickets?id=eq.${currentTicket.id}&select=*`,{headers:authHeaders()});
-    const d2=await r2.json();
-    currentTicket=d2[0]??currentTicket;
-    renderPaid(currentTicket);
-  } catch(e){ errEl.textContent='Error de conexión'; errEl.style.display='block'; btn.disabled=false; chkPay(); }
+    if(!res.ok){errEl.textContent=json.error??'Error al procesar pago';errEl.style.display='block';btn.disabled=false;chkPay();return;}
+    const r2=await fetch(`${SUPABASE_URL}/rest/v1/tickets?id=eq.${currentTicket.id}&select=*`,{headers:authH()});
+    const d2=await r2.json(); currentTicket=d2[0]??currentTicket;
+    goTab('ticket');
+  }catch(e){errEl.textContent='Error de conexión';errEl.style.display='block';btn.disabled=false;chkPay();}
 }
 
+// ── HISTORIAL ──
+async function loadHistory(){
+  loadingEl('history-content');
+  const res=await fetch(`${SUPABASE_URL}/rest/v1/tickets?user_id=eq.${USER.id}&order=entry_at.desc&limit=30`,{headers:authH()});
+  const data=await res.json();
+  if(!data||data.length===0){
+    document.getElementById('history-content').innerHTML=`<div class="empty-state"><div class="empty-icon">🕐</div><div class="empty-title">Sin historial</div><div class="empty-sub">Aquí aparecerán tus visitas anteriores</div></div>`;
+    return;
+  }
+  const sL={active:'ACTIVO',paid:'PAGADO',exited:'COMPLETADO',fined:'MULTADO'};
+  const sC={active:'#00C853',paid:'#1C6EF7',exited:'#00C853',fined:'#FF4444'};
+  document.getElementById('history-content').innerHTML=data.map(t=>`
+    <div class="hist-item">
+      <div><div class="hist-token">${t.qr_token??t.id.slice(0,8)}</div>
+      <div class="hist-date">${fmtDate(t.entry_at)} · ${fmtTime(t.entry_at)}</div>
+      <div style="color:#555;font-size:10px;margin-top:2px;">Cajón ${t.spot_id??'—'}</div></div>
+      <div><div class="hist-amount">$${t.amount_mxn??0} MXN</div>
+      <div class="hist-status" style="color:${sC[t.status]??'#555'}">● ${sL[t.status]??t.status.toUpperCase()}</div></div>
+    </div>`).join('');
+}
+
+// ── RENDERIZAR PAID (desde ticket tab) ──
 function renderPaid(ticket){
-  if(ticketInterval){ clearInterval(ticketInterval); ticketInterval=null; }
+  if(ticketInterval){clearInterval(ticketInterval);ticketInterval=null;}
   document.getElementById('ticket-content').innerHTML=`
     <div class="success-banner">
       <div class="success-icon">✓</div>
-      <div>
-        <div style="color:#00C853;font-size:15px;font-weight:800;">Pago exitoso</div>
-        <div style="color:#555;font-size:12px;margin-top:2px;">Tienes <strong style="color:#FFF;">15 min</strong> para salir</div>
-      </div>
+      <div><div style="color:#00C853;font-size:15px;font-weight:800;">Pago exitoso</div>
+      <div style="color:#555;font-size:12px;margin-top:2px;">Tienes <strong style="color:#FFF;">15 min</strong> para salir</div></div>
     </div>
-    <div class="qr-section">
+    <div class="qr-card">
       <div class="qr-lbl">QR de salida</div>
       <div class="qr-wrap"><div id="qr-out"></div></div>
       <div class="qr-token">${ticket.qr_token??''}</div>
@@ -538,7 +591,7 @@ function renderPaid(ticket){
     </div>
     <div class="card">
       <div class="info-row"><span class="info-key">Cajón</span><span class="info-val">${ticket.spot_id??'—'}</span></div>
-      <div class="info-row"><span class="info-key">Entrada</span><span class="info-val">${formatTime(ticket.entry_at)}</span></div>
+      <div class="info-row"><span class="info-key">Entrada</span><span class="info-val">${fmtTime(ticket.entry_at)}</span></div>
       <div class="info-row"><span class="info-key">Total pagado</span><span class="info-val">$${ticket.amount_mxn??0} MXN</span></div>
       <div class="info-row"><span class="info-key">Método</span><span class="info-val">Tarjeta</span></div>
     </div>
@@ -548,36 +601,7 @@ function renderPaid(ticket){
   }
 }
 
-// ══════════════════════════════════════
-// HISTORIAL
-// ══════════════════════════════════════
-async function loadHistory(){
-  loading('history-content');
-  const res=await fetch(`${SUPABASE_URL}/rest/v1/tickets?user_id=eq.${USER.id}&order=entry_at.desc&limit=30`,{headers:authHeaders()});
-  const data=await res.json();
-  if(!data||data.length===0){
-    document.getElementById('history-content').innerHTML=`<div class="empty-state"><div class="empty-icon">🕐</div><div class="empty-title">Sin historial</div><div class="empty-sub">Aquí aparecerán tus visitas anteriores</div></div>`;
-    return;
-  }
-  const sLabel={active:'ACTIVO',paid:'PAGADO',exited:'COMPLETADO',fined:'MULTADO'};
-  const sColor={active:'#00C853',paid:'#1C6EF7',exited:'#00C853',fined:'#FF4444'};
-  document.getElementById('history-content').innerHTML=data.map(t=>`
-    <div class="hist-item">
-      <div>
-        <div class="hist-token">${t.qr_token??t.id.slice(0,8)}</div>
-        <div class="hist-date">${formatDate(t.entry_at)} · ${formatTime(t.entry_at)}</div>
-        <div style="color:#555;font-size:10px;margin-top:2px;">Cajón ${t.spot_id??'—'}</div>
-      </div>
-      <div>
-        <div class="hist-amount">$${t.amount_mxn??0} MXN</div>
-        <div class="hist-status" style="color:${sColor[t.status]??'#555'}">● ${sLabel[t.status]??t.status.toUpperCase()}</div>
-      </div>
-    </div>`).join('');
-}
-
-// ══════════════════════════════════════
-// CONFIGURACIÓN
-// ══════════════════════════════════════
+// ── CONFIG ──
 function loadConfig(){
   document.getElementById('config-content').innerHTML=`
     <div class="config-section">
@@ -609,19 +633,15 @@ async function changePass(){
   const cp=document.getElementById('cp').value;
   const errEl=document.getElementById('pass-err');
   const okEl=document.getElementById('pass-ok');
-  errEl.style.display='none'; okEl.style.display='none';
-  if(np.length<6){ errEl.textContent='Mínimo 6 caracteres'; errEl.style.display='block'; return; }
-  if(np!==cp){ errEl.textContent='Las contraseñas no coinciden'; errEl.style.display='block'; return; }
-  const res=await fetch(`${SUPABASE_URL}/auth/v1/user`,{
-    method:'PUT',
-    headers:{'apikey':SUPABASE_ANON,'Authorization':`Bearer ${SESSION.access_token}`,'Content-Type':'application/json'},
-    body:JSON.stringify({password:np}),
-  });
-  if(res.ok){ okEl.style.display='block'; document.getElementById('np').value=''; document.getElementById('cp').value=''; }
-  else { const d=await res.json(); errEl.textContent=d.message??'Error'; errEl.style.display='block'; }
+  errEl.style.display='none';okEl.style.display='none';
+  if(np.length<6){errEl.textContent='Mínimo 6 caracteres';errEl.style.display='block';return;}
+  if(np!==cp){errEl.textContent='Las contraseñas no coinciden';errEl.style.display='block';return;}
+  const res=await fetch(`${SUPABASE_URL}/auth/v1/user`,{method:'PUT',headers:{'apikey':SUPABASE_ANON,'Authorization':`Bearer ${SESSION.access_token}`,'Content-Type':'application/json'},body:JSON.stringify({password:np})});
+  if(res.ok){okEl.style.display='block';document.getElementById('np').value='';document.getElementById('cp').value='';}
+  else{const d=await res.json();errEl.textContent=d.message??'Error';errEl.style.display='block';}
 }
 
-function signOut(){ localStorage.removeItem('parkea_session'); window.location.href='index.html'; }
+function signOut(){localStorage.removeItem('parkea_session');window.location.href='index.html';}
 
 // Init
 loadHome();
