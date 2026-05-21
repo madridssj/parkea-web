@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="manifest" href="manifest.json"/>
+  <meta name="theme-color" content="#FFE118"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="PARKEA"/>
+  <link rel="apple-touch-icon" href="icons/icon-192.png"/>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js');
+      });
+    }
+  </script>
+  <title>PARKEA</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:#0A0A0A;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;display:flex;flex-direction:column;}
+
+    /* Layout */
+    .screen{flex:1;overflow-y:auto;padding:16px;padding-bottom:80px;display:none;}
+    .screen.active{display:block;}
+
+    /* Tab bar */
+    .tabbar{position:fixed;bottom:0;left:0;right:0;background:#111;border-top:1px solid #2C2C2C;display:flex;align-items:center;justify-content:space-around;padding:8px 0 20px;z-index:100;}
+    .tb-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:4px 0;}
+    .tb-icon{font-size:22px;opacity:0.4;transition:opacity 0.2s;}
+    .tb-label{font-size:9px;color:#555;letter-spacing:0.5px;font-weight:700;text-transform:uppercase;}
+    .tb-item.active .tb-icon{opacity:1;}
+    .tb-item.active .tb-label{background:linear-gradient(90deg,#A8E063,#56CCF2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+
+    /* Header */
+    .header{display:flex;justify-content:space-between;align-items:center;padding:52px 0 16px;}
+    .header-sub{color:#555;font-size:10px;letter-spacing:2px;text-transform:uppercase;}
+    .header-title{color:#FFF;font-size:20px;font-weight:800;margin-top:2px;}
+    .avatar{width:40px;height:40px;border-radius:20px;background:#FFE118;display:flex;align-items:center;justify-content:center;color:#0A0A0A;font-size:16px;font-weight:900;cursor:pointer;flex-shrink:0;}
+
+    /* Cards */
+    .card{background:#1A1A1A;border-radius:20px;padding:16px;margin-bottom:12px;border:1px solid #2C2C2C;}
+    .card-dark{background:#202020;border-color:#FFE11833;}
+    .section-label{color:#555;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;}
+    .info-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #1E1E1E;}
+    .info-row:last-child{border:none;}
+    .info-key{font-size:12px;color:#555;}
+    .info-val{font-size:12px;font-weight:600;color:#FFF;}
+
+    /* Ticket */
+    .badge{border-radius:8px;padding:4px 10px;font-size:9px;font-weight:800;letter-spacing:1px;}
+    .badge-active{background:#00C85322;border:1.5px solid #00C85344;color:#00C853;}
+    .badge-paid{background:#1C6EF722;border:1.5px solid #1C6EF744;color:#1C6EF7;}
+    .timer-box{background:#111;border-radius:14px;padding:16px;text-align:center;margin:12px 0;border:1px solid #FFE11822;}
+    .timer-lbl{font-size:8px;color:#555;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
+    .timer-txt{color:#FFE118;font-size:42px;font-weight:900;font-family:'Courier New',monospace;letter-spacing:-1px;}
+    .courtesy-badge{background:#00C85322;border:1px solid #00C85344;border-radius:8px;padding:4px 12px;display:inline-block;font-size:10px;color:#00C853;font-weight:700;margin-top:8px;}
+    .cost-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #222;}
+    .cost-lbl{font-size:12px;color:#555;}
+    .cost-val{font-size:22px;font-weight:900;}
+    .progress-bg{background:#181818;border-radius:5px;height:5px;overflow:hidden;margin-top:10px;}
+    .progress-fill{height:100%;border-radius:5px;background:#FFE118;transition:width 1s linear;}
+
+    /* Botones */
+    .btn{width:100%;padding:15px;border-radius:14px;border:none;font-size:15px;font-weight:900;cursor:pointer;margin-bottom:10px;}
+    .btn-yellow{background:#FFE118;color:#0A0A0A;box-shadow:0 0 22px #FFE11844;}
+    .btn-yellow:disabled{background:#333;color:#666;box-shadow:none;cursor:not-allowed;}
+    .btn-outline{background:transparent;color:#FFF;border:1.5px solid #2C2C2C;}
+    .btn-red{background:transparent;color:#FF4444;border:1.5px solid #FF444433;}
+
+    /* Pago */
+    .pay-form{background:#111;border-radius:18px;padding:16px;margin-bottom:12px;border:1.5px solid #FFE11833;}
+    .pay-form-title{color:#FFE118;font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;}
+    .field{margin-bottom:12px;}
+    .field label{display:block;color:#888;font-size:10px;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;}
+    .field input{width:100%;background:#1A1A1A;border:1.5px solid #2C2C2C;border-radius:12px;padding:13px 14px;color:#FFF;font-size:14px;font-weight:600;outline:none;-webkit-appearance:none;}
+    .field input:focus{border-color:#FFE118;}
+    .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    .secure-note{color:#333;font-size:10px;text-align:center;margin-top:8px;}
+
+    /* QR salida */
+    .qr-section{background:#1A1A1A;border-radius:20px;padding:20px;margin-bottom:12px;border:1px solid #2C2C2C;text-align:center;}
+    .qr-lbl{color:#555;font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;}
+    .qr-wrap{background:#FFF;border-radius:12px;padding:10px;display:inline-block;margin-bottom:12px;}
+    .qr-token{color:#FFE118;font-size:14px;font-weight:700;letter-spacing:2px;}
+    .qr-sub{color:#555;font-size:11px;margin-top:6px;}
+    .success-banner{display:flex;align-items:center;gap:14px;background:#00C85312;border-radius:14px;padding:16px;margin-bottom:14px;border:1.5px solid #00C85333;}
+    .success-icon{width:40px;height:40px;border-radius:20px;background:#00C85322;border:1.5px solid #00C853;display:flex;align-items:center;justify-content:center;color:#00C853;font-size:20px;font-weight:900;flex-shrink:0;}
+
+    /* Historial */
+    .hist-item{background:#1A1A1A;border-radius:16px;padding:14px;margin-bottom:10px;border:1px solid #2C2C2C;display:flex;justify-content:space-between;align-items:center;}
+    .hist-left{}
+    .hist-token{color:#1C6EF7;font-size:12px;font-weight:700;}
+    .hist-date{color:#555;font-size:11px;margin-top:2px;}
+    .hist-right{text-align:right;}
+    .hist-amount{color:#FFE118;font-size:14px;font-weight:800;}
+    .hist-status{font-size:10px;font-weight:700;margin-top:2px;}
+    .hist-status.exited{color:#00C853;}
+    .hist-status.paid{color:#1C6EF7;}
+    .hist-status.active{color:#00C853;}
+
+    /* Config */
+    .config-section{background:#1A1A1A;border-radius:18px;padding:16px;margin-bottom:14px;border:1px solid #2C2C2C;}
+    .config-title{color:#555;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;}
+    .profile-row{display:flex;align-items:center;gap:14px;}
+    .profile-avatar{width:52px;height:52px;border-radius:26px;background:#FFE118;display:flex;align-items:center;justify-content:center;color:#0A0A0A;font-size:20px;font-weight:900;flex-shrink:0;}
+    .profile-name{color:#FFF;font-size:15px;font-weight:700;}
+    .profile-email{color:#555;font-size:12px;margin-top:2px;}
+
+    /* Utiles */
+    .error-box{background:#FF444415;border-radius:10px;border:1px solid #FF444433;padding:12px;margin-bottom:12px;color:#FF4444;font-size:12px;text-align:center;display:none;}
+    .success-box{background:#00C85315;border-radius:10px;border:1px solid #00C85333;padding:12px;margin-bottom:12px;color:#00C853;font-size:12px;text-align:center;display:none;}
+    .empty-state{text-align:center;padding:48px 20px;}
+    .empty-icon{width:60px;height:60px;border-radius:30px;background:#FFE11822;border:1.5px solid #FFE11844;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;color:#FFE118;font-size:24px;font-weight:900;}
+    .empty-title{color:#FFF;font-size:16px;font-weight:700;margin-bottom:6px;}
+    .empty-sub{color:#555;font-size:13px;line-height:1.6;}
+    .spinner-sm{width:18px;height:18px;border:2px solid #0A0A0A44;border-top:2px solid #0A0A0A;border-radius:50%;animation:spin 0.8s linear infinite;display:inline-block;vertical-align:middle;}
+    .spinner-lg{width:36px;height:36px;border:3px solid #222;border-top:3px solid #FFE118;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto;}
+    .loading-center{text-align:center;padding:48px 20px;}
+    .loading-center p{color:#555;font-size:13px;margin-top:12px;}
+    .fares{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+    .fare-cell{background:#1A1A1A;border-radius:12px;padding:10px 6px;text-align:center;border:1px solid #2C2C2C;}
+    .fare-amt{font-size:15px;font-weight:900;}
+    .fare-unit{color:#FFF;font-size:8px;margin-top:2px;}
+    .fare-lbl{color:#555;font-size:8px;margin-top:2px;}
+    .warning-box{background:#1A0808;border-radius:14px;padding:14px;border:1px solid #FF444422;display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+    .warn-icon{width:28px;height:28px;border-radius:14px;background:#FF444418;border:1px solid #FF444444;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#FF4444;font-weight:900;font-size:14px;}
+    .warn-text{color:#FF4444;font-size:11px;font-weight:700;}
+    .warn-desc{color:#555;font-size:10px;margin-top:2px;}
+    .free-banner{background:#00C85312;border-radius:14px;padding:20px;margin-bottom:12px;border:1.5px solid #00C85333;text-align:center;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+  </style>
+</head>
+<body>
+
+<!-- ═══ TICKET ═══ -->
+<div id="screen-ticket" class="screen active">
+  <div class="header">
+    <div>
+      <div class="header-sub">Mi boleto</div>
+      <div class="header-title">Ticket <span style="color:#FFE118">activo</span></div>
+    </div>
+    <div class="avatar" id="avatar-ticket" onclick="goTab('config')">?</div>
+  </div>
+  <div id="ticket-content"></div>
+</div>
+
+<!-- ═══ HISTORIAL ═══ -->
+<div id="screen-history" class="screen">
+  <div class="header">
+    <div>
+      <div class="header-sub">Mis visitas</div>
+      <div class="header-title">Historial</div>
+    </div>
+    <div class="avatar" id="avatar-history" onclick="goTab('config')">?</div>
+  </div>
+  <div id="history-content"></div>
+</div>
+
+<!-- ═══ CONFIGURACIÓN ═══ -->
+<div id="screen-config" class="screen">
+  <div class="header">
+    <div>
+      <div class="header-sub">Mi cuenta</div>
+      <div class="header-title">Configuración</div>
+    </div>
+  </div>
+  <div id="config-content"></div>
+</div>
+
+<!-- Tab bar -->
+<nav class="tabbar">
+  <div class="tb-item active" onclick="goTab('ticket')" id="tb-ticket">
+    <div class="tb-icon">🎫</div>
+    <div class="tb-label">Ticket</div>
+  </div>
+  <div class="tb-item" onclick="goTab('history')" id="tb-history">
+    <div class="tb-icon">🕐</div>
+    <div class="tb-label">Historial</div>
+  </div>
+  <div class="tb-item" onclick="goTab('config')" id="tb-config">
+    <div class="tb-icon">⚙️</div>
+    <div class="tb-label">Config</div>
+  </div>
+</nav>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+// ═══════════════════════════════════════════════════
+// CONSTANTES
+// ═══════════════════════════════════════════════════
+const SUPABASE_URL  = 'https://pjpquwrrmjfzdcicvssm.supabase.co';
+const SUPABASE_ANON = 'sb_publishable_vDACoUwPW_ql0KAtqXXF6g_hQbbFdn3';
+const PAYMENT_URL   = `${SUPABASE_URL}/functions/v1/process-payment`;
+const COURTESY=15, FIRST=15, EXTRA=20;
+
+// ═══════════════════════════════════════════════════
+// SESIÓN
+// ═══════════════════════════════════════════════════
+let SESSION = null;
+try {
+  const s = JSON.parse(localStorage.getItem('parkea_session') || 'null');
+  if(s && s.access_token && s.expires_at > Date.now()/1000) SESSION = s;
+} catch(e){}
+
+if(!SESSION){ window.location.href = 'index.html'; }
+
+const USER = SESSION?.user;
+const userName = USER?.user_metadata?.full_name || USER?.email?.split('@')[0] || '?';
+const userInitial = userName.charAt(0).toUpperCase();
+
+document.querySelectorAll('.avatar').forEach(a => a.textContent = userInitial);
+
+function authHeaders(){
+  return {
+    'apikey': SUPABASE_ANON,
+    'Authorization': `Bearer ${SESSION.access_token}`,
+    'Content-Type': 'application/json',
+  };
+}
+
+// ═══════════════════════════════════════════════════
+// NAVEGACIÓN
+// ═══════════════════════════════════════════════════
+let currentTab = 'ticket';
+
+function goTab(tab){
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tb-item').forEach(t => t.classList.remove('active'));
+  document.getElementById('screen-'+tab).classList.add('active');
+  document.getElementById('tb-'+tab).classList.add('active');
+  currentTab = tab;
+  if(tab === 'ticket')  loadTicket();
+  if(tab === 'history') loadHistory();
+  if(tab === 'config')  loadConfig();
+}
+
+// ═══════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════
+function pad(n){ return String(n).padStart(2,'0'); }
+function calcCost(mins){
+  if(mins <= COURTESY) return 0;
+  const b = Math.ceil((mins-COURTESY)/60);
+  return FIRST + Math.max(0,b-1)*EXTRA;
+}
+function minutesSince(iso){ return Math.floor((Date.now()-new Date(iso).getTime())/60000); }
+function formatTime(iso){ return new Date(iso).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}); }
+function formatDate(iso){ return new Date(iso).toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'}); }
+
+// ═══════════════════════════════════════════════════
+// TICKET
+// ═══════════════════════════════════════════════════
+let ticketInterval = null;
+let currentTicket  = null;
+let payView = false;
+
+async function loadTicket(){
+  const el = document.getElementById('ticket-content');
+  el.innerHTML = `<div class="loading-center"><div class="spinner-lg"></div><p>Cargando ticket...</p></div>`;
+  payView = false;
+  if(ticketInterval){ clearInterval(ticketInterval); ticketInterval=null; }
+
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/tickets?user_id=eq.${USER.id}&status=in.(active,paid)&order=entry_at.desc&limit=1`,
+    { headers: authHeaders() }
+  );
+  const data = await res.json();
+  currentTicket = data && data.length > 0 ? data[0] : null;
+
+  if(!currentTicket){ renderNoTicket(); return; }
+  if(currentTicket.status === 'paid'){ renderPaid(currentTicket); return; }
+  renderActive(currentTicket);
+}
+
+function renderNoTicket(){
+  document.getElementById('ticket-content').innerHTML = `
+    <div class="empty-state">
+      <div class="empty-icon">P</div>
+      <div class="empty-title">Sin ticket activo</div>
+      <div class="empty-sub">Escanea el QR del estacionamiento<br/>para registrar tu entrada</div>
+    </div>
+    <div class="fares">
+      <div class="fare-cell"><div class="fare-amt" style="color:#00C853;">15 min</div><div class="fare-unit">GRATIS</div><div class="fare-lbl">Cortesía</div></div>
+      <div class="fare-cell"><div class="fare-amt" style="color:#FFE118;">$15</div><div class="fare-unit">MXN</div><div class="fare-lbl">1ª hora</div></div>
+      <div class="fare-cell"><div class="fare-amt" style="color:#1C6EF7;">$20</div><div class="fare-unit">MXN</div><div class="fare-lbl">Hora extra</div></div>
+    </div>
+    <div class="warning-box">
+      <div class="warn-icon">!</div>
+      <div><div class="warn-text">Multa por tolerancia excedida</div>
+      <div class="warn-desc">+15 min después de pagar — $50 MXN adicionales</div></div>
+    </div>`;
+}
+
+function renderActive(ticket){
+  const el = document.getElementById('ticket-content');
+  el.innerHTML = `
+    <div class="card card-dark">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <div>
+          <div style="color:#555;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;">Ticket activo</div>
+          <div style="color:#FFF;font-size:18px;font-weight:800;margin-top:2px;">Cajón <span style="color:#FFE118">${ticket.spot_id??'—'}</span></div>
+        </div>
+        <div class="badge badge-active">● ACTIVO</div>
+      </div>
+      <div class="timer-box">
+        <div class="timer-lbl">Tiempo en estacionamiento</div>
+        <div class="timer-txt" id="timer-display">00:00:00</div>
+        <div id="courtesy-badge"></div>
+      </div>
+      <div class="cost-row">
+        <span class="cost-lbl">Costo actual</span>
+        <span id="cost-display" class="cost-val" style="color:#00C853;">$0 <span style="font-size:11px;font-weight:400;color:#555;">MXN</span></span>
+      </div>
+      <div class="progress-bg"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    </div>
+    <div class="card">
+      <div class="info-row"><span class="info-key">Token</span><span class="info-val" style="color:#1C6EF7;">${ticket.qr_token??'—'}</span></div>
+      <div class="info-row"><span class="info-key">Cajón</span><span class="info-val">${ticket.spot_id??'—'}</span></div>
+      <div class="info-row"><span class="info-key">Entrada</span><span class="info-val">${formatTime(ticket.entry_at)}</span></div>
+      <div class="info-row"><span class="info-key">Placa</span><span class="info-val" style="color:#555;font-style:italic;">${ticket.plate??'PROVISIONAL'}</span></div>
+    </div>
+    <button class="btn btn-yellow" id="btn-pay-now" onclick="showPayForm()">Pagar ahora</button>
+    <div class="warning-box">
+      <div class="warn-icon">!</div>
+      <div><div class="warn-text">Multa por tolerancia excedida</div>
+      <div class="warn-desc">+15 min después de pagar — $50 MXN adicionales</div></div>
+    </div>`;
+
+  startTicketTimer(ticket);
+}
+
+function startTicketTimer(ticket){
+  if(ticketInterval){ clearInterval(ticketInterval); }
+  function update(){
+    const totalSecs = Math.floor((Date.now()-new Date(ticket.entry_at).getTime())/1000);
+    const mins = Math.floor(totalSecs/60);
+    const secs = totalSecs%60;
+    const hh = Math.floor(mins/60);
+    const timerEl = document.getElementById('timer-display');
+    if(timerEl) timerEl.textContent = `${pad(hh)}:${pad(mins%60)}:${pad(secs)}`;
+    const cost = calcCost(mins);
+    const costEl = document.getElementById('cost-display');
+    if(costEl){
+      if(mins<=COURTESY){
+        costEl.innerHTML = `<span style="color:#00C853;">$0</span> <span style="font-size:11px;font-weight:400;color:#555;">MXN</span>`;
+      } else {
+        costEl.innerHTML = `<span style="color:#FFF;">$${cost}</span> <span style="font-size:11px;font-weight:400;color:#555;">MXN</span>`;
+      }
+    }
+    const courtEl = document.getElementById('courtesy-badge');
+    if(courtEl){
+      if(mins<=COURTESY){
+        courtEl.className='courtesy-badge';
+        courtEl.textContent=`${COURTESY-mins} min de cortesía restantes`;
+        courtEl.style.display='inline-block';
+      } else {
+        courtEl.style.display='none';
+      }
+    }
+    const progEl = document.getElementById('progress-fill');
+    if(progEl) progEl.style.width = Math.min(100,(totalSecs/5400)*100)+'%';
+
+    // Actualizar botón de pago
+    const btn = document.getElementById('btn-pay-now');
+    if(btn && !payView){
+      btn.textContent = cost>0 ? `Pagar ahora — $${cost} MXN` : 'Salida gratuita (cortesía)';
+    }
+  }
+  update();
+  ticketInterval = setInterval(update, 1000);
+}
+
+function showPayForm(){
+  payView = true;
+  if(ticketInterval){ clearInterval(ticketInterval); ticketInterval=null; }
+  const ticket = currentTicket;
+  const cost = calcCost(minutesSince(ticket.entry_at));
+  const el = document.getElementById('ticket-content');
+
+  let formHtml = '';
+  if(cost === 0){
+    formHtml = `
+      <div class="free-banner">
+        <div style="font-size:32px;margin-bottom:8px;">🎉</div>
+        <div style="color:#00C853;font-size:16px;font-weight:800;margin-bottom:4px;">Salida gratuita</div>
+        <div style="color:#555;font-size:12px;">Estás dentro del periodo de cortesía</div>
+      </div>`;
+  } else {
+    formHtml = `
+      <div class="pay-form">
+        <div class="pay-form-title">💳 Datos de tarjeta</div>
+        <div class="field"><label>Número de tarjeta</label>
+          <input type="tel" id="cn" placeholder="0000 0000 0000 0000" maxlength="19" inputmode="numeric" oninput="fmtCard(this);chkForm()"/>
+        </div>
+        <div class="field"><label>Nombre en la tarjeta</label>
+          <input type="text" id="cn-name" placeholder="Como aparece en la tarjeta" oninput="chkForm()"/>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Vencimiento</label>
+            <input type="tel" id="cn-exp" placeholder="MM/AA" maxlength="5" inputmode="numeric" oninput="fmtExp(this);chkForm()"/>
+          </div>
+          <div class="field"><label>CVV</label>
+            <input type="tel" id="cn-cvv" placeholder="123" maxlength="4" inputmode="numeric" oninput="this.value=this.value.replace(/\\D/g,'').slice(0,4);chkForm()"/>
+          </div>
+        </div>
+        <div class="secure-note">🔐 Pago seguro · Datos encriptados</div>
+      </div>`;
+  }
+
+  el.innerHTML = `
+    <div class="card" style="margin-bottom:12px;">
+      <div style="color:#555;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Resumen</div>
+      <div class="info-row"><span class="info-key">Cajón</span><span class="info-val">${ticket.spot_id??'—'}</span></div>
+      <div class="info-row"><span class="info-key">Entrada</span><span class="info-val">${formatTime(ticket.entry_at)}</span></div>
+      <div class="info-row" style="border:none;padding-top:10px;">
+        <span style="color:#FFF;font-size:14px;font-weight:700;">Total</span>
+        <span style="color:${cost===0?'#00C853':'#FFE118'};font-size:20px;font-weight:900;">${cost===0?'GRATIS':'$'+cost+' MXN'}</span>
+      </div>
+    </div>
+    ${formHtml}
+    <div class="error-box" id="pay-err"></div>
+    <button class="btn btn-yellow" id="btn-confirm" onclick="confirmPay()" ${cost>0?'disabled':''}>
+      ${cost===0?'CONFIRMAR SALIDA GRATUITA':'Completa los datos de tarjeta'}
+    </button>
+    <button class="btn btn-outline" onclick="loadTicket()" style="margin-top:4px;">← Volver</button>`;
+}
+
+function fmtCard(el){ el.value=el.value.replace(/\D/g,'').slice(0,16).replace(/(.{4})/g,'$1 ').trim(); }
+function fmtExp(el){ const c=el.value.replace(/\D/g,'').slice(0,4); el.value=c.length>=3?c.slice(0,2)+'/'+c.slice(2):c; }
+
+function chkForm(){
+  const num  = (document.getElementById('cn')?.value||'').replace(/\s/g,'');
+  const name = (document.getElementById('cn-name')?.value||'').trim();
+  const exp  = (document.getElementById('cn-exp')?.value||'');
+  const cvv  = (document.getElementById('cn-cvv')?.value||'');
+  const [month] = exp.split('/');
+  const valid = num.length===16 && name.length>2 && exp.length===5 &&
+                parseInt(month)>=1 && parseInt(month)<=12 && cvv.length>=3;
+  const btn = document.getElementById('btn-confirm');
+  if(btn){
+    btn.disabled = !valid;
+    const cost = calcCost(minutesSince(currentTicket.entry_at));
+    btn.textContent = valid ? `CONFIRMAR PAGO · $${cost} MXN` : 'Completa los datos de tarjeta';
+  }
+}
+
+async function confirmPay(){
+  const btn   = document.getElementById('btn-confirm');
+  const errEl = document.getElementById('pay-err');
+  errEl.style.display='none';
+  btn.disabled=true;
+  btn.innerHTML='<span class="spinner-sm"></span> Procesando...';
+
+  try {
+    const res = await fetch(PAYMENT_URL, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'Authorization':`Bearer ${SESSION.access_token}` },
+      body: JSON.stringify({ ticketId: currentTicket.id, paymentMethod:'app' }),
+    });
+    const json = await res.json();
+    if(!res.ok){
+      errEl.textContent = json.error ?? 'Error al procesar pago';
+      errEl.style.display='block';
+      btn.disabled=false;
+      chkForm();
+      return;
+    }
+    // Recargar ticket actualizado
+    const r2 = await fetch(
+      `${SUPABASE_URL}/rest/v1/tickets?id=eq.${currentTicket.id}&select=*`,
+      { headers: authHeaders() }
+    );
+    const d2 = await r2.json();
+    currentTicket = d2[0] ?? currentTicket;
+    renderPaid(currentTicket);
+  } catch(e){
+    errEl.textContent='Error de conexión. Intenta de nuevo.';
+    errEl.style.display='block';
+    btn.disabled=false;
+    chkForm();
+  }
+}
+
+function renderPaid(ticket){
+  if(ticketInterval){ clearInterval(ticketInterval); ticketInterval=null; }
+  const el = document.getElementById('ticket-content');
+  el.innerHTML = `
+    <div class="success-banner">
+      <div class="success-icon">✓</div>
+      <div>
+        <div style="color:#00C853;font-size:15px;font-weight:800;">Pago exitoso</div>
+        <div style="color:#555;font-size:12px;margin-top:2px;">Tienes <strong style="color:#FFF;">15 min</strong> para salir</div>
+      </div>
+    </div>
+    <div class="qr-section">
+      <div class="qr-lbl">QR de salida</div>
+      <div class="qr-wrap"><div id="qr-out"></div></div>
+      <div class="qr-token">${ticket.qr_token??''}</div>
+      <div class="qr-sub">Muestra este código al tótem en la salida</div>
+    </div>
+    <div class="card">
+      <div class="info-row"><span class="info-key">Cajón</span><span class="info-val">${ticket.spot_id??'—'}</span></div>
+      <div class="info-row"><span class="info-key">Entrada</span><span class="info-val">${formatTime(ticket.entry_at)}</span></div>
+      <div class="info-row"><span class="info-key">Total pagado</span><span class="info-val">$${ticket.amount_mxn??0} MXN</span></div>
+      <div class="info-row"><span class="info-key">Método</span><span class="info-val">Tarjeta</span></div>
+    </div>`;
+
+  if(ticket.qr_token){
+    new QRCode(document.getElementById('qr-out'),{
+      text: ticket.qr_token, width:160, height:160,
+      colorDark:'#0A0A0A', colorLight:'#FFFFFF',
+      correctLevel: QRCode.CorrectLevel.M,
+    });
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// HISTORIAL
+// ═══════════════════════════════════════════════════
+async function loadHistory(){
+  const el = document.getElementById('history-content');
+  el.innerHTML=`<div class="loading-center"><div class="spinner-lg"></div><p>Cargando historial...</p></div>`;
+
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/tickets?user_id=eq.${USER.id}&order=entry_at.desc&limit=30`,
+    { headers: authHeaders() }
+  );
+  const data = await res.json();
+
+  if(!data || data.length===0){
+    el.innerHTML=`<div class="empty-state">
+      <div class="empty-icon">🕐</div>
+      <div class="empty-title">Sin historial</div>
+      <div class="empty-sub">Aquí aparecerán tus visitas anteriores</div>
+    </div>`;
+    return;
+  }
+
+  const statusLabel = { active:'ACTIVO', paid:'PAGADO', exited:'COMPLETADO', fined:'MULTADO' };
+  const statusClass = { active:'active', paid:'paid', exited:'exited', fined:'active' };
+
+  el.innerHTML = data.map(t => `
+    <div class="hist-item">
+      <div class="hist-left">
+        <div class="hist-token">${t.qr_token??t.id.slice(0,8)}</div>
+        <div class="hist-date">${formatDate(t.entry_at)} · ${formatTime(t.entry_at)}</div>
+        <div style="color:#555;font-size:10px;margin-top:2px;">Cajón ${t.spot_id??'—'}</div>
+      </div>
+      <div class="hist-right">
+        <div class="hist-amount">$${t.amount_mxn??0} MXN</div>
+        <div class="hist-status ${statusClass[t.status]??''}">● ${statusLabel[t.status]??t.status.toUpperCase()}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════
+// CONFIGURACIÓN
+// ═══════════════════════════════════════════════════
+function loadConfig(){
+  const el = document.getElementById('config-content');
+  el.innerHTML = `
+    <div class="config-section">
+      <div class="config-title">Perfil</div>
+      <div class="profile-row">
+        <div class="profile-avatar">${userInitial}</div>
+        <div>
+          <div class="profile-name">${userName}</div>
+          <div class="profile-email">${USER?.email??''}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="config-section">
+      <div class="config-title">Seguridad</div>
+      <div class="field"><label>Nueva contraseña</label>
+        <input type="password" id="new-pass" placeholder="Mínimo 6 caracteres"/>
+      </div>
+      <div class="field"><label>Confirmar contraseña</label>
+        <input type="password" id="conf-pass" placeholder="Repite la contraseña"/>
+      </div>
+      <div class="error-box" id="pass-err"></div>
+      <div class="success-box" id="pass-ok">✓ Contraseña actualizada</div>
+      <button class="btn btn-yellow" onclick="changePassword()">Actualizar contraseña</button>
+    </div>
+
+    <div class="config-section">
+      <div class="config-title">Métodos de pago</div>
+      <div class="info-row">
+        <span class="info-key">💳 Tarjeta de crédito / débito</span>
+        <span class="info-val" style="color:#555;font-size:11px;">Por pago</span>
+      </div>
+      <div class="info-row" style="opacity:0.4;">
+        <span class="info-key">📱 NFC / Tap to Pay</span>
+        <span class="info-val" style="color:#555;font-size:11px;">Próximamente</span>
+      </div>
+    </div>
+
+    <button class="btn btn-red" onclick="signOut()">Cerrar sesión</button>`;
+}
+
+async function changePassword(){
+  const np = document.getElementById('new-pass').value;
+  const cp = document.getElementById('conf-pass').value;
+  const errEl = document.getElementById('pass-err');
+  const okEl  = document.getElementById('pass-ok');
+  errEl.style.display='none'; okEl.style.display='none';
+
+  if(np.length<6){ errEl.textContent='Mínimo 6 caracteres'; errEl.style.display='block'; return; }
+  if(np!==cp){ errEl.textContent='Las contraseñas no coinciden'; errEl.style.display='block'; return; }
+
+  const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+    method:'PUT',
+    headers:{ 'apikey':SUPABASE_ANON, 'Authorization':`Bearer ${SESSION.access_token}`, 'Content-Type':'application/json' },
+    body: JSON.stringify({ password: np }),
+  });
+
+  if(res.ok){
+    okEl.style.display='block';
+    document.getElementById('new-pass').value='';
+    document.getElementById('conf-pass').value='';
+  } else {
+    const d = await res.json();
+    errEl.textContent = d.message ?? 'Error al actualizar contraseña';
+    errEl.style.display='block';
+  }
+}
+
+function signOut(){
+  localStorage.removeItem('parkea_session');
+  window.location.href='index.html';
+}
+
+// ═══════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════
+loadTicket();
+</script>
+</body>
+</html>
