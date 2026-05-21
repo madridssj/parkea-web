@@ -17,51 +17,65 @@
     body{background:#0A0A0A;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;display:flex;flex-direction:column;}
 
     /* Screens */
-    .screen{flex:1;overflow-y:auto;padding:0 16px 96px;display:none;}
+    .screen{flex:1;overflow-y:auto;padding:0 16px 90px;display:none;}
     .screen.active{display:block;}
 
-    /* ── TAB BAR (igual que Android) ── */
+    /* ── MAGIC TAB BAR ── */
     .tabbar{
       position:fixed;bottom:0;left:0;right:0;
-      background:#0A0A0A;
-      border-top:1px solid #1A1A1A;
-      display:flex;align-items:flex-end;justify-content:space-around;
-      padding:10px 8px 28px;
+      background:#111111;
+      border-top:1px solid #1E1E1E;
+      padding:6px 8px 28px;
       z-index:100;
     }
-    .tb-item{
-      flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;
-      cursor:pointer;padding:2px 0;
+    .tab-row{
+      display:flex;align-items:flex-end;justify-content:space-around;
     }
-    .tb-icon{display:flex;align-items:center;justify-content:center;width:28px;height:28px;}
-    .tb-icon svg{width:24px;height:24px;fill:none;stroke:#444;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:stroke 0.2s;}
-    .tb-label{font-size:9px;color:#444;letter-spacing:0.3px;font-weight:600;transition:color 0.2s;}
-    .tb-item.active .tb-icon svg{stroke:#FFFFFF;}
-    .tb-item.active .tb-label{color:#FFFFFF;}
+    /* Tab normal */
+    .tb{
+      flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+      padding-top:6px;gap:3px;cursor:pointer;position:relative;min-height:46px;
+    }
+    /* Píldora degradado detrás del ícono activo */
+    .tb.active::before{
+      content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);
+      width:52px;height:40px;border-radius:14px;
+      background:linear-gradient(135deg,#A8E063,#56CCF2);
+      z-index:0;
+    }
+    .tb-icon{
+      position:relative;z-index:1;
+      width:22px;height:22px;display:flex;align-items:center;justify-content:center;
+    }
+    .tb-icon svg{width:22px;height:22px;fill:none;stroke:#444;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+    .tb.active .tb-icon svg{stroke:#FFFFFF;}
+    .tb-label{font-size:10px;color:#444;letter-spacing:0.2px;position:relative;z-index:1;}
+    .tb.active .tb-label{display:none;}/* sin texto cuando activo */
+    .tb-dot{width:4px;height:4px;border-radius:2px;background:#A8E063;display:none;}
+    .tb.active .tb-dot{display:block;}
 
-    /* Botón central scanner */
-    .tb-center{
-      flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;
-      cursor:pointer;padding:2px 0;margin-bottom:10px;
+    /* Botón scan central — siempre degradado */
+    .tb-scan{
+      flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+      cursor:pointer;margin-bottom:6px;gap:3px;
     }
-    .tb-center-btn{
-      width:56px;height:56px;border-radius:16px;
+    .tb-scan-btn{
+      width:54px;height:54px;border-radius:16px;
       background:linear-gradient(135deg,#A8E063,#56CCF2);
       display:flex;align-items:center;justify-content:center;
       box-shadow:0 4px 16px #56CCF244;
     }
-    .tb-center-btn svg{width:26px;height:26px;fill:none;stroke:#0A0A0A;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
-    .tb-center-lbl{font-size:9px;color:#444;letter-spacing:0.3px;font-weight:600;}
+    .tb-scan-btn svg{width:24px;height:24px;fill:none;stroke:#0A0A0A;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+    .tb-scan-lbl{font-size:10px;color:#444;letter-spacing:0.2px;}
 
     /* Header */
     .header{display:flex;justify-content:space-between;align-items:center;padding:56px 0 16px;}
     .h-sub{color:#555;font-size:10px;letter-spacing:2px;text-transform:uppercase;}
-    .h-title{color:#FFF;font-size:20px;font-weight:800;margin-top:2px;}
+    .h-title{color:#FFF;font-size:22px;font-weight:800;margin-top:2px;}
     .avatar{width:42px;height:42px;border-radius:21px;background:#FFE118;display:flex;align-items:center;justify-content:center;color:#0A0A0A;font-size:16px;font-weight:900;cursor:pointer;flex-shrink:0;}
 
     /* Cards */
     .card{background:#1A1A1A;border-radius:20px;padding:16px;margin-bottom:12px;border:1px solid #2C2C2C;}
-    .card-timer{background:#202020;border-radius:20px;padding:18px;margin-bottom:14px;border:1.5px solid #FFE11833;box-shadow:0 0 32px #FFE11811;align-items:center;}
     .row{display:flex;justify-content:space-between;align-items:flex-start;}
     .info-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #1E1E1E;}
     .info-row:last-child{border:none;}
@@ -71,58 +85,57 @@
 
     /* Badges */
     .badge{border-radius:10px;padding:4px 10px;font-size:10px;font-weight:800;letter-spacing:1px;}
-    .badge-green{background:#00C85322;border:1.5px solid #00C85344;color:#00C853;}
-    .badge-blue{background:#1C6EF722;border:1.5px solid #1C6EF744;color:#1C6EF7;}
 
-    /* Timer */
-    .timer-box{background:#111;border-radius:14px;padding:16px;text-align:center;margin-bottom:12px;border:1px solid #FFE11822;}
-    .timer-lbl{font-size:9px;color:#555;letter-spacing:2px;text-transform:uppercase;margin-bottom:5px;}
-    .timer-txt{color:#FFE118;font-size:46px;font-weight:900;font-family:'Courier New',monospace;letter-spacing:-2px;line-height:1;}
-    .cost-row{display:flex;align-items:baseline;margin-top:12px;justify-content:center;gap:4px;}
-    .cost-lbl{font-size:12px;color:#555;}
-    .cost-val{font-size:26px;font-weight:800;}
-    .courtesy-badge{background:#00C85322;border:1px solid #00C85344;border-radius:8px;padding:4px 12px;display:inline-block;font-size:11px;color:#00C853;font-weight:700;margin-bottom:12px;}
-    .prog-bg{background:#181818;border-radius:5px;height:5px;overflow:hidden;width:100%;margin-top:12px;}
-    .prog-fill{height:100%;border-radius:5px;background:#FFE118;}
-
-    /* Home */
+    /* ── HOME ── */
+    .avail-card{background:#1A1A1A;border-radius:20px;padding:18px;border-width:1.5px;border-style:solid;margin-bottom:16px;}
     .avail-num{font-size:48px;font-weight:900;line-height:1.1;margin-top:4px;}
     .avail-total{font-size:18px;font-weight:400;color:#555;}
-    .avail-prog-bg{background:#111;border-radius:5px;height:6px;overflow:hidden;margin-top:12px;}
-    .avail-prog-fill{height:100%;border-radius:5px;transition:width 0.5s;}
+    .prog-bg{background:#111;border-radius:5px;height:6px;overflow:hidden;margin-top:12px;}
+    .prog-fill{height:100%;border-radius:5px;transition:width 0.5s;}
     .realtime{color:#333;font-size:9px;margin-top:6px;text-align:right;letter-spacing:1.5px;text-transform:uppercase;}
     .flow-card{background:#1A1A1A;border-radius:16px;padding:16px;margin-bottom:16px;border:1px solid #1C6EF722;}
     .flow-title{color:#1C6EF7;font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;}
     .step{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;}
     .step:last-child{margin-bottom:0;}
-    .step-num{width:24px;height:24px;border-radius:8px;background:#1C6EF718;border:1px solid #1C6EF733;display:flex;align-items:center;justify-content:center;color:#1C6EF7;font-size:11px;font-weight:800;flex-shrink:0;}
+    .step-num{width:24px;height:24px;min-width:24px;border-radius:8px;background:#1C6EF718;border:1px solid #1C6EF733;display:flex;align-items:center;justify-content:center;color:#1C6EF7;font-size:11px;font-weight:800;}
     .step-title{color:#FFF;font-size:12px;font-weight:600;}
-    .step-desc{color:#555;font-size:10px;margin-top:2px;line-height:1.5;}
-    .fares{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+    .step-desc{color:#555;font-size:10px;margin-top:2px;line-height:15px;}
+    .fares{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;}
     .fare-cell{background:#1A1A1A;border-radius:14px;padding:12px 8px;text-align:center;border:1.5px solid #2C2C2C;}
     .fare-amt{font-size:18px;font-weight:900;}
     .fare-unit{color:#FFF;font-size:9px;margin-top:2px;}
     .fare-lbl{color:#555;font-size:9px;margin-top:2px;}
-    .fine-card{background:#1A0808;border-radius:14px;padding:14px;border:1px solid #FF444422;display:flex;align-items:center;gap:12px;margin-bottom:12px;}
-    .fine-icon{width:28px;height:28px;border-radius:14px;background:#FF444418;border:1px solid #FF444444;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#FF4444;font-weight:900;font-size:14px;}
+    .fine-card{background:#1A0808;border-radius:14px;padding:14px;border:1px solid #FF444422;display:flex;align-items:center;gap:12px;margin-bottom:8px;}
+    .fine-icon{width:28px;height:28px;min-width:28px;border-radius:14px;background:#FF444418;border:1px solid #FF444444;display:flex;align-items:center;justify-content:center;color:#FF4444;font-weight:900;font-size:14px;}
     .fine-txt{color:#FF4444;font-size:12px;font-weight:700;}
     .fine-desc{color:#555;font-size:10px;margin-top:2px;}
 
-    /* Pagar */
-    .pay-summary{background:#202020;border-radius:18px;padding:16px;margin-bottom:14px;border:1.5px solid #FFE11833;}
-    .pay-total-row{display:flex;justify-content:space-between;align-items:center;padding-top:12px;}
-    .pay-total-lbl{color:#FFF;font-size:14px;font-weight:700;}
-    .pay-total-val{font-size:22px;font-weight:900;}
+    /* ── TICKET ── */
+    .timer-card{background:#202020;border-radius:20px;padding:18px;border:1.5px solid #FFE11833;margin-bottom:14px;text-align:center;box-shadow:0 0 32px #FFE11811;}
+    .timer-lbl{font-size:9px;color:#555;letter-spacing:2px;text-transform:uppercase;margin-bottom:5px;}
+    .timer-txt{color:#FFE118;font-size:46px;font-weight:900;font-family:'Courier New',monospace;letter-spacing:-2px;line-height:1;}
+    .courtesy-badge{background:#00C85322;border:1px solid #00C85344;border-radius:8px;padding:5px 12px;display:inline-block;font-size:11px;color:#00C853;font-weight:700;margin-bottom:12px;}
+    .cost-row-t{display:flex;align-items:baseline;justify-content:center;gap:4px;margin-top:12px;}
+    .cost-lbl-t{font-size:12px;color:#555;}
+    .cost-val-t{font-size:26px;font-weight:800;}
+    .breakdown-t{color:#555;font-size:10px;margin-top:6px;letter-spacing:0.5px;}
+    .prog-bg-t{background:#181818;border-radius:5px;height:5px;overflow:hidden;width:100%;margin-top:12px;}
+    .prog-fill-t{height:100%;border-radius:5px;background:#FFE118;}
+
+    /* ── PAY ── */
+    .summary-card{background:#202020;border-radius:18px;padding:16px;margin-bottom:14px;border:1.5px solid #FFE11833;}
+    .total-row{display:flex;justify-content:space-between;align-items:center;padding-top:12px;}
+    .total-lbl{color:#FFF;font-size:14px;font-weight:700;}
+    .total-val{font-size:22px;font-weight:900;}
     .card-indicator{display:flex;align-items:center;gap:14px;background:#1A1A1A;border-radius:14px;padding:16px;margin-bottom:14px;border:1.5px solid #1C6EF733;}
     .pay-form{background:#1A1A1A;border-radius:18px;padding:16px;margin-bottom:14px;border:1px solid #2C2C2C;}
-    .pay-form-title{color:#555;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;}
     .field{margin-bottom:12px;}
     .field label{display:block;color:#888;font-size:10px;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;}
     .field input{width:100%;background:#111;border:1.5px solid #2C2C2C;border-radius:12px;padding:14px;color:#FFF;font-size:14px;font-weight:600;outline:none;-webkit-appearance:none;}
     .field input:focus{border-color:#FFE118;}
     .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
     .secure-note{color:#333;font-size:10px;text-align:center;margin-top:8px;}
-    .free-banner{background:#00C85312;border-radius:14px;padding:20px;margin-bottom:14px;border:1.5px solid #00C85333;text-align:center;}
+    .free-banner{background:#00C85312;border-radius:14px;padding:24px;margin-bottom:14px;border:1.5px solid #00C85333;text-align:center;}
 
     /* QR salida */
     .qr-card{background:#1A1A1A;border-radius:20px;padding:20px;margin-bottom:14px;border:1px solid #2C2C2C;text-align:center;}
@@ -131,7 +144,7 @@
     .qr-token{color:#FFE118;font-size:14px;font-weight:700;letter-spacing:2px;}
     .qr-sub{color:#555;font-size:11px;margin-top:6px;}
     .success-banner{display:flex;align-items:center;gap:14px;background:#00C85312;border-radius:14px;padding:16px;margin-bottom:14px;border:1.5px solid #00C85333;}
-    .success-icon{width:40px;height:40px;border-radius:20px;background:#00C85322;border:1.5px solid #00C853;display:flex;align-items:center;justify-content:center;color:#00C853;font-size:20px;font-weight:900;flex-shrink:0;}
+    .success-icon{width:40px;height:40px;min-width:40px;border-radius:20px;background:#00C85322;border:1.5px solid #00C853;display:flex;align-items:center;justify-content:center;color:#00C853;font-size:20px;font-weight:900;}
 
     /* Historial */
     .hist-item{background:#1A1A1A;border-radius:16px;padding:14px;margin-bottom:10px;border:1px solid #2C2C2C;display:flex;justify-content:space-between;align-items:center;}
@@ -146,8 +159,8 @@
     .profile-row{display:flex;align-items:center;gap:14px;}
     .profile-avatar{width:52px;height:52px;border-radius:26px;background:#FFE118;display:flex;align-items:center;justify-content:center;color:#0A0A0A;font-size:20px;font-weight:900;flex-shrink:0;}
 
-    /* Botones */
-    .btn{width:100%;padding:15px;border-radius:16px;border:none;font-size:15px;font-weight:900;cursor:pointer;margin-bottom:10px;text-align:center;}
+    /* Buttons */
+    .btn{width:100%;padding:15px;border-radius:16px;border:none;font-size:15px;font-weight:900;cursor:pointer;margin-bottom:10px;text-align:center;display:block;}
     .btn-yellow{background:#FFE118;color:#0A0A0A;box-shadow:0 0 22px #FFE11844;}
     .btn-yellow:disabled{background:#333;color:#666;box-shadow:none;cursor:not-allowed;}
     .btn-outline{background:transparent;color:#FFF;border:1px solid #2C2C2C;}
@@ -156,10 +169,10 @@
     /* Utils */
     .error-box{background:#FF444415;border-radius:10px;border:1px solid #FF444433;padding:12px;margin-bottom:12px;color:#FF4444;font-size:12px;text-align:center;display:none;}
     .success-box{background:#00C85315;border-radius:10px;border:1px solid #00C85333;padding:12px;margin-bottom:12px;color:#00C853;font-size:12px;text-align:center;display:none;}
-    .empty-state{text-align:center;padding:48px 20px;}
-    .empty-icon{width:64px;height:64px;border-radius:32px;background:#FFE11822;border:1.5px solid #FFE11844;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:#FFE118;font-size:26px;font-weight:900;}
+    .empty-state{text-align:center;padding:56px 20px;}
+    .empty-icon{width:64px;height:64px;border-radius:32px;background:#FFE11822;border:1.5px solid #FFE11844;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:#FFE118;font-size:24px;font-weight:900;}
     .empty-title{color:#FFF;font-size:18px;font-weight:700;margin-bottom:8px;}
-    .empty-sub{color:#555;font-size:13px;line-height:1.6;text-align:center;}
+    .empty-sub{color:#555;font-size:13px;line-height:20px;}
     .spinner-sm{width:18px;height:18px;border:2px solid #0A0A0A44;border-top:2px solid #0A0A0A;border-radius:50%;animation:spin 0.8s linear infinite;display:inline-block;vertical-align:middle;}
     .spinner-lg{width:36px;height:36px;border:3px solid #222;border-top:3px solid #FFE118;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto;}
     .loading-wrap{text-align:center;padding:48px 20px;}
@@ -173,25 +186,21 @@
 <div id="screen-home" class="screen active">
   <div class="header">
     <div><div class="h-sub">Bienvenida</div><div class="h-title" id="home-name">—</div></div>
-    <div class="avatar" id="av-home" onclick="goTab('config')">?</div>
+    <div class="avatar" onclick="goTab('config')">?</div>
   </div>
   <div id="home-content"></div>
 </div>
 
 <!-- ══ TICKET ══ -->
 <div id="screen-ticket" class="screen">
-  <div class="header">
-    <div><div class="h-sub">Ticket activo</div><div class="h-title">Mi <span style="color:#FFE118">boleto</span></div></div>
-    <div class="avatar" id="av-ticket" onclick="goTab('config')">?</div>
-  </div>
   <div id="ticket-content"></div>
 </div>
 
 <!-- ══ SCAN ══ -->
 <div id="screen-scan" class="screen">
   <div class="header">
-    <div><div class="h-sub">Registrar entrada</div><div class="h-title">Escanear <span style="color:#FFE118">QR</span></div></div>
-    <div class="avatar" id="av-scan" onclick="goTab('config')">?</div>
+    <div><div class="h-sub">Panel de acceso</div><div class="h-title">Escanear <span style="color:#FFE118">QR</span></div></div>
+    <div class="avatar" onclick="goTab('config')">?</div>
   </div>
   <div id="scan-content"></div>
 </div>
@@ -200,17 +209,17 @@
 <div id="screen-history" class="screen">
   <div class="header">
     <div><div class="h-sub">Mis visitas</div><div class="h-title">Historial</div></div>
-    <div class="avatar" id="av-history" onclick="goTab('config')">?</div>
+    <div class="avatar" onclick="goTab('config')">?</div>
   </div>
   <div id="history-content"></div>
 </div>
 
-<!-- ══ PAGAR ══ -->
+<!-- ══ PAY ══ -->
 <div id="screen-pay" class="screen">
   <div id="pay-content"></div>
 </div>
 
-<!-- ══ CONFIG ══ -->
+<!-- ══ CONFIG (settings) ══ -->
 <div id="screen-config" class="screen">
   <div class="header">
     <div><div class="h-sub">Mi cuenta</div><div class="h-title">Configuración</div></div>
@@ -218,51 +227,66 @@
   <div id="config-content"></div>
 </div>
 
-<!-- ══ TAB BAR ══ -->
+<!-- ══ MAGIC TAB BAR ══ -->
 <nav class="tabbar">
-  <div class="tb-item active" onclick="goTab('home')" id="tb-home">
-    <div class="tb-icon">
-      <svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H5a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
-    </div>
-    <div class="tb-label">Inicio</div>
-  </div>
+  <div class="tab-row">
 
-  <div class="tb-item" onclick="goTab('ticket')" id="tb-ticket">
-    <div class="tb-icon">
-      <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M16 2v3M8 2v3M2 10h20"/><circle cx="8" cy="15" r="1" fill="#444"/><circle cx="12" cy="15" r="1" fill="#444"/><circle cx="16" cy="15" r="1" fill="#444"/></svg>
+    <!-- Inicio -->
+    <div class="tb active" id="tb-home" onclick="goTab('home')">
+      <div class="tb-icon">
+        <svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H5a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
+      </div>
+      <div class="tb-label">Inicio</div>
+      <div class="tb-dot"></div>
     </div>
-    <div class="tb-label">Ticket</div>
-  </div>
 
-  <!-- Botón central scanner -->
-  <div class="tb-center" onclick="goTab('scan')" id="tb-scan">
-    <div class="tb-center-btn">
-      <svg viewBox="0 0 24 24"><path d="M4 7V4h3M17 4h3v3M4 17v3h3M17 20h3v-3"/><rect x="7" y="7" width="4" height="4" rx="1"/><rect x="13" y="7" width="4" height="4" rx="1"/><rect x="7" y="13" width="4" height="4" rx="1"/><rect x="13" y="13" width="4" height="4" rx="1"/></svg>
+    <!-- Ticket -->
+    <div class="tb" id="tb-ticket" onclick="goTab('ticket')">
+      <div class="tb-icon">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 4v5M15 4v5"/></svg>
+      </div>
+      <div class="tb-label">Ticket</div>
+      <div class="tb-dot"></div>
     </div>
-    <div class="tb-center-lbl">Escanear</div>
-  </div>
 
-  <div class="tb-item" onclick="goTab('history')" id="tb-history">
-    <div class="tb-icon">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+    <!-- Scan central -->
+    <div class="tb-scan" id="tb-scan" onclick="goTab('scan')">
+      <div class="tb-scan-btn">
+        <svg viewBox="0 0 24 24"><path d="M4 7V4h3M17 4h3v3M4 17v3h3M17 20h3v-3M8 8h1v1H8zM11 8h1v1h-1zM14 8h1v1h-1zM8 11h1v1H8zM11 11h1v1h-1zM14 11h1v1h-1zM8 14h1v1H8zM11 14h1v1h-1zM14 14h1v1h-1z"/></svg>
+      </div>
+      <div class="tb-scan-lbl">Escanear</div>
     </div>
-    <div class="tb-label">Historial</div>
-  </div>
 
-  <div class="tb-item" onclick="goTab('pay')" id="tb-pay">
-    <div class="tb-icon">
-      <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M6 15h4"/><circle cx="17" cy="15" r="1.5" fill="#444"/></svg>
+    <!-- Historial -->
+    <div class="tb" id="tb-history" onclick="goTab('history')">
+      <div class="tb-icon">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+      </div>
+      <div class="tb-label">Historial</div>
+      <div class="tb-dot"></div>
     </div>
-    <div class="tb-label">Pagar</div>
+
+    <!-- Pagar -->
+    <div class="tb" id="tb-pay" onclick="goTab('pay')">
+      <div class="tb-icon">
+        <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></svg>
+      </div>
+      <div class="tb-label">Pagar</div>
+      <div class="tb-dot"></div>
+    </div>
+
   </div>
 </nav>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
+// ══════════════════════════════════════
+// SESIÓN
+// ══════════════════════════════════════
 const SUPABASE_URL  = 'https://pjpquwrrmjfzdcicvssm.supabase.co';
 const SUPABASE_ANON = 'sb_publishable_vDACoUwPW_ql0KAtqXXF6g_hQbbFdn3';
 const PAYMENT_URL   = `${SUPABASE_URL}/functions/v1/process-payment`;
-const COURTESY=15,FIRST=15,EXTRA=20;
+const COURTESY=15, FIRST=15, EXTRA=20;
 
 let SESSION=null;
 try{ const s=JSON.parse(localStorage.getItem('parkea_session')||'null'); if(s&&s.access_token&&s.expires_at>Date.now()/1000)SESSION=s; }catch(e){}
@@ -282,18 +306,31 @@ function fmtTime(iso){ return new Date(iso).toLocaleTimeString('es-MX',{hour:'2-
 function fmtDate(iso){ return new Date(iso).toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'}); }
 function loadingEl(id){ document.getElementById(id).innerHTML=`<div class="loading-wrap"><div class="spinner-lg"></div><p>Cargando...</p></div>`; }
 
-// ── NAVEGACIÓN ──
+// ══════════════════════════════════════
+// NAVEGACIÓN
+// ══════════════════════════════════════
 let currentTab='home';
 let ticketInterval=null;
 let spotsInterval=null;
 let currentTicket=null;
 
+const TAB_SCREENS=['home','ticket','scan','history','pay','config'];
+
 function goTab(tab){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.tb-item,.tb-center').forEach(t=>t.classList.remove('active'));
+  // Limpiar intervalos al salir
+  if(currentTab==='home' && tab!=='home' && spotsInterval){ clearInterval(spotsInterval); spotsInterval=null; }
+
+  TAB_SCREENS.forEach(t=>{
+    document.getElementById('screen-'+t).classList.remove('active');
+    const el=document.getElementById('tb-'+t);
+    if(el) el.classList.remove('active');
+  });
+
   document.getElementById('screen-'+tab).classList.add('active');
-  document.getElementById('tb-'+tab).classList.add('active');
+  const tbEl=document.getElementById('tb-'+tab);
+  if(tbEl) tbEl.classList.add('active');
   currentTab=tab;
+
   if(tab==='home')    loadHome();
   if(tab==='ticket')  loadTicket();
   if(tab==='scan')    loadScan();
@@ -302,34 +339,40 @@ function goTab(tab){
   if(tab==='config')  loadConfig();
 }
 
-// ── HOME ──
+// ══════════════════════════════════════
+// HOME — igual que home.tsx
+// ══════════════════════════════════════
 let spots=34;
 function loadHome(){
-  if(spotsInterval){ clearInterval(spotsInterval); }
   renderHome();
+  if(spotsInterval) clearInterval(spotsInterval);
   spotsInterval=setInterval(()=>{
     spots=Math.max(10,Math.min(50,spots+Math.floor(Math.random()*3)-1));
     const pct=(spots/50)*100;
     const c=pct>55?'#00C853':pct>25?'#FF8C00':'#FF4444';
     const el=document.getElementById('sn'); if(el){el.textContent=spots;el.style.color=c;}
     const pf=document.getElementById('sp'); if(pf){pf.style.width=pct+'%';pf.style.background=c;}
-    const bl=document.getElementById('sb'); if(bl){bl.textContent=pct>55?'DISPONIBLE':pct>25?'CASI LLENO':'MUY LLENO';bl.style.color=c;bl.style.borderColor=c+'55';bl.style.background=c+'22';}
+    const bl=document.getElementById('sb');
+    if(bl){bl.textContent=pct>55?'DISPONIBLE':pct>25?'CASI LLENO':'MUY LLENO';bl.style.color=c;bl.style.borderColor=c+'55';bl.style.background=c+'22';}
+    const ac=document.getElementById('ac');
+    if(ac){ac.style.borderColor=c+'44';ac.style.boxShadow=`0 0 24px ${c}18`;}
   },2800);
 }
+
 function renderHome(){
   const pct=(spots/50)*100;
   const c=pct>55?'#00C853':pct>25?'#FF8C00':'#FF4444';
   const lbl=pct>55?'DISPONIBLE':pct>25?'CASI LLENO':'MUY LLENO';
   document.getElementById('home-content').innerHTML=`
-    <div class="card" style="border-color:${c}44;box-shadow:0 0 24px ${c}18;margin-bottom:16px;">
+    <div class="avail-card" id="ac" style="border-color:${c}44;box-shadow:0 0 24px ${c}18;">
       <div class="row">
         <div>
           <div class="section-lbl">Cajones disponibles</div>
           <div class="avail-num"><span id="sn" style="color:${c}">${spots}</span><span class="avail-total">/50</span></div>
         </div>
-        <div class="badge" id="sb" style="background:${c}22;border-color:${c}55;color:${c}">${lbl}</div>
+        <div class="badge" id="sb" style="background:${c}22;border:1.5px solid ${c}55;color:${c}">${lbl}</div>
       </div>
-      <div class="avail-prog-bg"><div class="avail-prog-fill" id="sp" style="width:${pct}%;background:${c}"></div></div>
+      <div class="prog-bg"><div class="prog-fill" id="sp" style="width:${pct}%;background:${c}"></div></div>
       <div class="realtime">En tiempo real</div>
     </div>
     <div class="flow-card">
@@ -341,9 +384,9 @@ function renderHome(){
     </div>
     <div class="section-lbl" style="margin-bottom:10px;">Tarifas vigentes</div>
     <div class="fares">
-      <div class="fare-cell"><div class="fare-amt" style="color:#00C853;">15 min</div><div class="fare-unit">GRATIS</div><div class="fare-lbl">Cortesía</div></div>
-      <div class="fare-cell"><div class="fare-amt" style="color:#FFE118;">$15</div><div class="fare-unit">MXN</div><div class="fare-lbl">1ª hora</div></div>
-      <div class="fare-cell"><div class="fare-amt" style="color:#1C6EF7;">$20</div><div class="fare-unit">MXN</div><div class="fare-lbl">Hora extra</div></div>
+      <div class="fare-cell" style="border-color:#00C85344"><div class="fare-amt" style="color:#00C853">15 min</div><div class="fare-unit">GRATIS</div><div class="fare-lbl">Cortesía</div></div>
+      <div class="fare-cell" style="border-color:#FFE11844"><div class="fare-amt" style="color:#FFE118">$15</div><div class="fare-unit">MXN</div><div class="fare-lbl">1ª hora</div></div>
+      <div class="fare-cell" style="border-color:#1C6EF744"><div class="fare-amt" style="color:#1C6EF7">$20</div><div class="fare-unit">MXN</div><div class="fare-lbl">Hora extra</div></div>
     </div>
     <div class="fine-card">
       <div class="fine-icon">!</div>
@@ -351,7 +394,9 @@ function renderHome(){
     </div>`;
 }
 
-// ── TICKET ──
+// ══════════════════════════════════════
+// TICKET — igual que ticket.tsx
+// ══════════════════════════════════════
 async function loadTicket(){
   loadingEl('ticket-content');
   if(ticketInterval){clearInterval(ticketInterval);ticketInterval=null;}
@@ -365,36 +410,43 @@ async function loadTicket(){
 
 function renderNoTicket(){
   document.getElementById('ticket-content').innerHTML=`
+    <div style="padding:56px 0 16px;display:flex;justify-content:space-between;align-items:center;">
+      <div><div class="h-sub">Ticket activo</div><div class="h-title">Mi <span style="color:#FFE118">boleto</span></div></div>
+      <div class="avatar" onclick="goTab('config')">${userInitial}</div>
+    </div>
     <div class="empty-state">
       <div class="empty-icon">P</div>
       <div class="empty-title">Sin ticket activo</div>
-      <div class="empty-sub">Escanea el QR del estacionamiento<br/>para registrar tu entrada</div>
+      <div class="empty-sub">Escanea el QR del estacionamiento para ingresar</div>
     </div>`;
 }
 
 function renderActive(ticket){
   document.getElementById('ticket-content').innerHTML=`
-    <div class="card-timer">
-      <div class="row" style="margin-bottom:8px;">
-        <div><div class="section-lbl">Ticket activo</div><div style="color:#FFF;font-size:18px;font-weight:700;">Cajón <span style="color:#FFE118">${ticket.spot_id??'—'}</span></div></div>
-        <div class="badge badge-green">ACTIVO</div>
+    <div style="padding:56px 0 16px;display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div class="h-sub">${'Ticket activo'}</div>
+        <div style="color:#FFF;font-size:18px;font-weight:700;margin-top:2px;">Cajón <span style="color:#FFE118">${ticket.spot_id??'—'}</span></div>
       </div>
+      <div class="badge" style="background:#00C85322;border:1.5px solid #00C85344;color:#00C853">ACTIVO</div>
+    </div>
+    <div class="timer-card">
       <div id="t-courtesy-wrap"></div>
       <div class="timer-lbl">Tiempo en estacionamiento</div>
       <div class="timer-txt" id="t-timer">00:00:00</div>
-      <div class="cost-row">
-        <span class="cost-lbl">Costo&nbsp;&nbsp;</span>
-        <span id="t-cost" class="cost-val" style="color:#00C853;">$0</span>
-        <span class="cost-lbl">&nbsp;MXN</span>
+      <div class="cost-row-t">
+        <span class="cost-lbl-t">Costo&nbsp;&nbsp;</span>
+        <span id="t-cost" class="cost-val-t" style="color:#00C853">$0</span>
+        <span class="cost-lbl-t">&nbsp;MXN</span>
       </div>
-      <div id="t-breakdown" style="color:#555;font-size:10px;margin-top:6px;text-align:center;"></div>
-      <div class="prog-bg"><div class="prog-fill" id="t-prog" style="width:0%"></div></div>
+      <div id="t-breakdown" class="breakdown-t"></div>
+      <div class="prog-bg-t"><div class="prog-fill-t" id="t-prog" style="width:0%"></div></div>
     </div>
     <div class="card">
-      <div class="info-row"><span class="info-key">Token</span><span class="info-val" style="color:#1C6EF7;">${ticket.qr_token??'—'}</span></div>
+      <div class="info-row"><span class="info-key">Token</span><span class="info-val" style="color:#1C6EF7">${ticket.qr_token??'—'}</span></div>
       <div class="info-row"><span class="info-key">Cajón</span><span class="info-val">${ticket.spot_id??'—'}</span></div>
       <div class="info-row"><span class="info-key">Entrada</span><span class="info-val">${fmtTime(ticket.entry_at)}</span></div>
-      <div class="info-row"><span class="info-key">Placa</span><span class="info-val" style="color:#555;font-style:italic;">${ticket.plate??'PROVISIONAL'}</span></div>
+      <div class="info-row"><span class="info-key">Placa</span><span class="info-val" style="color:#555;font-style:italic">${ticket.plate??'PROVISIONAL'}</span></div>
     </div>
     <button class="btn btn-yellow" id="btn-pay-now" onclick="goTab('pay')">Pagar ahora</button>`;
   startTimer(ticket);
@@ -412,7 +464,7 @@ function startTimer(ticket){
     const cw=document.getElementById('t-courtesy-wrap');
     if(cw) cw.innerHTML=mins<=COURTESY?`<div class="courtesy-badge">Cortesía — ${COURTESY-mins} min gratis restantes</div>`:'';
     const bd=document.getElementById('t-breakdown');
-    if(bd&&cost>0) bd.textContent=`1 hr × $${FIRST}.00 MXN${cost>FIRST?' + '+Math.round((cost-FIRST)/EXTRA)+' hrs extra × $'+EXTRA+'.00 MXN':''}`;
+    if(bd) bd.textContent=cost>0?`1 hr × $${FIRST}.00 MXN${cost>FIRST?' + '+Math.round((cost-FIRST)/EXTRA)+' hrs extra × $'+EXTRA+'.00 MXN':''}`:'' ;
     const pEl=document.getElementById('t-prog'); if(pEl)pEl.style.width=Math.min(100,(secs/5400)*100)+'%';
     const btn=document.getElementById('btn-pay-now'); if(btn)btn.textContent=cost>0?`Pagar ahora — $${cost} MXN`:'Salida gratuita (cortesía)';
   }
@@ -420,39 +472,39 @@ function startTimer(ticket){
   ticketInterval=setInterval(update,1000);
 }
 
-// ── SCAN ──
+// ══════════════════════════════════════
+// SCAN — sin cámara, igual estructura
+// ══════════════════════════════════════
 function loadScan(){
   document.getElementById('scan-content').innerHTML=`
-    <div style="text-align:center;padding:32px 0 24px;">
-      <div style="width:200px;height:200px;border-radius:24px;background:#1A1A1A;border:2px solid #2C2C2C;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;position:relative;">
-        <div style="position:absolute;top:16px;left:16px;width:28px;height:28px;border-top:3px solid #FFE118;border-left:3px solid #FFE118;border-radius:4px;"></div>
-        <div style="position:absolute;top:16px;right:16px;width:28px;height:28px;border-top:3px solid #FFE118;border-right:3px solid #FFE118;border-radius:4px;"></div>
-        <div style="position:absolute;bottom:16px;left:16px;width:28px;height:28px;border-bottom:3px solid #FFE118;border-left:3px solid #FFE118;border-radius:4px;"></div>
-        <div style="position:absolute;bottom:16px;right:16px;width:28px;height:28px;border-bottom:3px solid #FFE118;border-right:3px solid #FFE118;border-radius:4px;"></div>
-        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <div style="text-align:center;padding:16px 0 24px;">
+      <div style="width:220px;height:220px;border-radius:24px;background:#1A1A1A;border:1.5px solid #2C2C2C;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;position:relative;">
+        <div style="position:absolute;top:16px;left:16px;width:30px;height:30px;border-top:3px solid #FFE118;border-left:3px solid #FFE118;border-radius:4px;"></div>
+        <div style="position:absolute;top:16px;right:16px;width:30px;height:30px;border-top:3px solid #FFE118;border-right:3px solid #FFE118;border-radius:4px;"></div>
+        <div style="position:absolute;bottom:16px;left:16px;width:30px;height:30px;border-bottom:3px solid #FFE118;border-left:3px solid #FFE118;border-radius:4px;"></div>
+        <div style="position:absolute;bottom:16px;right:16px;width:30px;height:30px;border-bottom:3px solid #FFE118;border-right:3px solid #FFE118;border-radius:4px;"></div>
+        <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="#2C2C2C" stroke-width="1.5" stroke-linecap="round">
           <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
-          <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="4" height="4" rx="0.5"/>
-          <rect x="18" y="18" width="3" height="3" rx="0.5"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="3" height="3"/>
+          <rect x="18" y="14" width="3" height="3"/><rect x="14" y="18" width="3" height="3"/><rect x="18" y="18" width="3" height="3"/>
         </svg>
       </div>
-      <div style="color:#555;font-size:13px;line-height:1.7;margin-bottom:28px;">
-        En la PWA no se puede usar la cámara.<br/>
-        Usa la cámara de tu iPhone para<br/>
-        escanear el QR del cartel.
-      </div>
+      <div style="color:#555;font-size:13px;line-height:22px;">En la PWA la cámara no está disponible.<br/>Usa la cámara nativa de tu iPhone.</div>
     </div>
     <div class="card" style="margin-bottom:12px;">
-      <div style="color:#555;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;">📥 Entrada</div>
-      <div style="color:#FFF;font-size:13px;line-height:1.7;margin-bottom:14px;">Apunta la cámara de tu iPhone al cartel QR del estacionamiento. Se abrirá el boleto automáticamente.</div>
-      <a href="https://parkea-sa-de-cv.github.io/parkea-web/ticket.html" class="btn btn-yellow" style="display:block;text-decoration:none;text-align:center;">Abrir escáner de iPhone</a>
+      <div class="section-lbl" style="margin-bottom:8px;">📥 Entrada al estacionamiento</div>
+      <div style="color:#555;font-size:13px;line-height:20px;margin-bottom:14px;">Apunta la cámara de tu iPhone al cartel QR del estacionamiento. Se abrirá el boleto automáticamente en Safari.</div>
+      <a href="https://parkea-sa-de-cv.github.io/parkea-web/ticket.html" class="btn btn-yellow" style="text-decoration:none;text-align:center;">Abrir escáner de iPhone</a>
     </div>
     <div class="card">
-      <div style="color:#555;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;">📤 Salida</div>
-      <div style="color:#FFF;font-size:13px;line-height:1.7;">Una vez pagado, tu QR de salida aparece en la pestaña <strong style="color:#FFE118">Ticket</strong>. Muéstralo al tótem.</div>
+      <div class="section-lbl" style="margin-bottom:8px;">📤 Salida</div>
+      <div style="color:#555;font-size:13px;line-height:20px;">Una vez pagado, tu QR de salida aparece en la pestaña <strong style="color:#FFE118">Ticket</strong>. Muéstralo al tótem.</div>
     </div>`;
 }
 
-// ── PAGAR ──
+// ══════════════════════════════════════
+// PAY — igual que pay.tsx
+// ══════════════════════════════════════
 async function loadPay(){
   loadingEl('pay-content');
   if(!currentTicket){
@@ -460,29 +512,32 @@ async function loadPay(){
     const data=await res.json();
     currentTicket=data?.length>0?data[0]:null;
   }
+
+  const header=`<div style="padding:56px 0 4px;">
+    <div class="h-sub">Checkout · Solo en app</div>
+    <div style="color:#FFF;font-size:18px;font-weight:700;margin-top:2px;">Pagar <span style="color:#FFE118">estancia</span></div>
+  </div>`;
+
   if(!currentTicket){
-    document.getElementById('pay-content').innerHTML=`
-      <div class="header"><div><div class="h-sub">Checkout</div><div class="h-title">Pagar <span style="color:#FFE118">estancia</span></div></div><div class="avatar" onclick="goTab('config')">${userInitial}</div></div>
+    document.getElementById('pay-content').innerHTML=`${header}
       <div class="empty-state">
         <div class="empty-icon">💳</div>
         <div class="empty-title">Sin ticket activo</div>
-        <div class="empty-sub">Escanea el QR del estacionamiento para registrar tu entrada</div>
+        <div class="empty-sub">Escanea el QR del estacionamiento<br/>para registrar tu entrada</div>
       </div>`;
     return;
   }
   if(currentTicket.status==='paid'){ goTab('ticket'); return; }
-  renderPayForm();
-}
 
-function renderPayForm(){
-  const ticket=currentTicket;
-  const cost=calcCost(mSince(ticket.entry_at));
+  const cost=calcCost(mSince(currentTicket.entry_at));
+  const isFree=cost===0;
   let formHtml='';
-  if(cost===0){
+
+  if(isFree){
     formHtml=`<div class="free-banner">
-      <div style="font-size:32px;margin-bottom:8px;">🎉</div>
-      <div style="color:#00C853;font-size:16px;font-weight:800;margin-bottom:4px;">Salida gratuita</div>
-      <div style="color:#555;font-size:12px;">Estás dentro del periodo de cortesía</div>
+      <div style="font-size:36px;margin-bottom:10px;">🎉</div>
+      <div style="color:#00C853;font-size:16px;font-weight:800;margin-bottom:6px;">Salida gratuita</div>
+      <div style="color:#555;font-size:12px;line-height:18px;">Estás dentro del periodo de cortesía.<br/>No se requiere pago.</div>
     </div>`;
   } else {
     formHtml=`
@@ -492,7 +547,7 @@ function renderPayForm(){
         <div style="color:#555;font-size:11px;margin-top:2px;">Débito o crédito · Procesado de forma segura</div></div>
       </div>
       <div class="pay-form">
-        <div class="pay-form-title">Datos de tarjeta</div>
+        <div class="section-lbl">Datos de tarjeta</div>
         <div class="field"><label>Número de tarjeta</label>
           <input type="tel" id="p-num" placeholder="0000 0000 0000 0000" maxlength="19" inputmode="numeric" oninput="fmtCard(this);chkPay()"/>
         </div>
@@ -504,25 +559,29 @@ function renderPayForm(){
             <input type="tel" id="p-exp" placeholder="MM/AA" maxlength="5" inputmode="numeric" oninput="fmtExp(this);chkPay()"/>
           </div>
           <div class="field"><label>CVV</label>
-            <input type="tel" id="p-cvv" placeholder="123" maxlength="4" inputmode="numeric" oninput="this.value=this.value.replace(/\\D/g,'').slice(0,4);chkPay()"/>
+            <input type="tel" id="p-cvv" placeholder="CVV" maxlength="4" inputmode="numeric" oninput="this.value=this.value.replace(/\\D/g,'').slice(0,4);chkPay()"/>
           </div>
         </div>
         <div class="secure-note">🔐 Pago seguro · Datos encriptados</div>
       </div>`;
   }
+
   document.getElementById('pay-content').innerHTML=`
-    <div class="header"><div><div class="h-sub">Checkout · Solo en app</div><div class="h-title">Pagar <span style="color:#FFE118">estancia</span></div></div><div class="avatar" onclick="goTab('config')">${userInitial}</div></div>
-    <div class="pay-summary">
+    ${header}
+    <div class="summary-card" style="margin-top:14px;">
       <div class="section-lbl">Resumen</div>
-      <div class="info-row"><span class="info-key">Cajón</span><span class="info-val">${ticket.spot_id??'—'}</span></div>
-      <div class="info-row"><span class="info-key">Entrada</span><span class="info-val">${fmtTime(ticket.entry_at)}</span></div>
-      <div class="info-row"><span class="info-key">Tiempo</span><span class="info-val">${pad(Math.floor(mSince(ticket.entry_at)/60))}h ${pad(mSince(ticket.entry_at)%60)}m</span></div>
-      <div class="pay-total-row"><span class="pay-total-lbl">Total</span><span class="pay-total-val" style="color:${cost===0?'#00C853':'#FFE118'}">${cost===0?'GRATIS':'$'+cost+' MXN'}</span></div>
+      <div class="info-row"><span class="info-key">Cajón</span><span class="info-val">${currentTicket.spot_id??'—'}</span></div>
+      <div class="info-row"><span class="info-key">Entrada</span><span class="info-val">${fmtTime(currentTicket.entry_at)}</span></div>
+      <div class="info-row"><span class="info-key">Tiempo</span><span class="info-val">${pad(Math.floor(mSince(currentTicket.entry_at)/60))}h ${pad(mSince(currentTicket.entry_at)%60)}m</span></div>
+      <div class="total-row">
+        <span class="total-lbl">Total</span>
+        <span class="total-val" style="color:${isFree?'#00C853':'#FFE118'}">${isFree?'GRATIS':'$'+cost+' MXN'}</span>
+      </div>
     </div>
     ${formHtml}
     <div class="error-box" id="pay-err"></div>
-    <button class="btn btn-yellow" id="btn-confirm" onclick="confirmPay()" ${cost>0?'disabled':''}>
-      ${cost===0?'CONFIRMAR SALIDA GRATUITA':'Completa los datos de tarjeta'}
+    <button class="btn btn-yellow" id="btn-confirm" onclick="confirmPay()" ${!isFree?'disabled':''}>
+      ${isFree?'CONFIRMAR SALIDA GRATUITA':'Completa los datos de tarjeta'}
     </button>`;
 }
 
@@ -553,7 +612,42 @@ async function confirmPay(){
   }catch(e){errEl.textContent='Error de conexión';errEl.style.display='block';btn.disabled=false;chkPay();}
 }
 
-// ── HISTORIAL ──
+// ══════════════════════════════════════
+// PAID QR — igual que ticket.tsx paid
+// ══════════════════════════════════════
+function renderPaid(ticket){
+  if(ticketInterval){clearInterval(ticketInterval);ticketInterval=null;}
+  document.getElementById('ticket-content').innerHTML=`
+    <div style="padding:56px 0 16px;display:flex;justify-content:space-between;align-items:center;">
+      <div><div class="h-sub">Pago completado</div><div style="color:#FFF;font-size:18px;font-weight:700;margin-top:2px;">Cajón <span style="color:#FFE118">${ticket.spot_id??'—'}</span></div></div>
+      <div class="badge" style="background:#1C6EF722;border:1.5px solid #1C6EF744;color:#1C6EF7">PAGADO</div>
+    </div>
+    <div class="success-banner">
+      <div class="success-icon">✓</div>
+      <div><div style="color:#00C853;font-size:15px;font-weight:800;">Pago exitoso</div>
+      <div style="color:#555;font-size:12px;margin-top:2px;">Tienes <strong style="color:#FFF">15 min</strong> para salir</div></div>
+    </div>
+    <div class="qr-card">
+      <div class="qr-lbl">QR de salida</div>
+      <div class="qr-wrap"><div id="qr-out"></div></div>
+      <div class="qr-token">${ticket.qr_token??''}</div>
+      <div class="qr-sub">Muestra este código al tótem en la salida</div>
+    </div>
+    <div class="card">
+      <div class="info-row"><span class="info-key">Cajón</span><span class="info-val">${ticket.spot_id??'—'}</span></div>
+      <div class="info-row"><span class="info-key">Entrada</span><span class="info-val">${fmtTime(ticket.entry_at)}</span></div>
+      <div class="info-row"><span class="info-key">Total pagado</span><span class="info-val">$${ticket.amount_mxn??0} MXN</span></div>
+      <div class="info-row"><span class="info-key">Método</span><span class="info-val">Tarjeta</span></div>
+    </div>
+    <button class="btn btn-outline" onclick="goTab('home')">Volver al inicio</button>`;
+  if(ticket.qr_token){
+    new QRCode(document.getElementById('qr-out'),{text:ticket.qr_token,width:140,height:140,colorDark:'#0A0A0A',colorLight:'#FFFFFF',correctLevel:QRCode.CorrectLevel.M});
+  }
+}
+
+// ══════════════════════════════════════
+// HISTORIAL
+// ══════════════════════════════════════
 async function loadHistory(){
   loadingEl('history-content');
   const res=await fetch(`${SUPABASE_URL}/rest/v1/tickets?user_id=eq.${USER.id}&order=entry_at.desc&limit=30`,{headers:authH()});
@@ -574,34 +668,9 @@ async function loadHistory(){
     </div>`).join('');
 }
 
-// ── RENDERIZAR PAID (desde ticket tab) ──
-function renderPaid(ticket){
-  if(ticketInterval){clearInterval(ticketInterval);ticketInterval=null;}
-  document.getElementById('ticket-content').innerHTML=`
-    <div class="success-banner">
-      <div class="success-icon">✓</div>
-      <div><div style="color:#00C853;font-size:15px;font-weight:800;">Pago exitoso</div>
-      <div style="color:#555;font-size:12px;margin-top:2px;">Tienes <strong style="color:#FFF;">15 min</strong> para salir</div></div>
-    </div>
-    <div class="qr-card">
-      <div class="qr-lbl">QR de salida</div>
-      <div class="qr-wrap"><div id="qr-out"></div></div>
-      <div class="qr-token">${ticket.qr_token??''}</div>
-      <div class="qr-sub">Muestra este código al tótem en la salida</div>
-    </div>
-    <div class="card">
-      <div class="info-row"><span class="info-key">Cajón</span><span class="info-val">${ticket.spot_id??'—'}</span></div>
-      <div class="info-row"><span class="info-key">Entrada</span><span class="info-val">${fmtTime(ticket.entry_at)}</span></div>
-      <div class="info-row"><span class="info-key">Total pagado</span><span class="info-val">$${ticket.amount_mxn??0} MXN</span></div>
-      <div class="info-row"><span class="info-key">Método</span><span class="info-val">Tarjeta</span></div>
-    </div>
-    <button class="btn btn-outline" onclick="goTab('home')">Volver al inicio</button>`;
-  if(ticket.qr_token){
-    new QRCode(document.getElementById('qr-out'),{text:ticket.qr_token,width:160,height:160,colorDark:'#0A0A0A',colorLight:'#FFFFFF',correctLevel:QRCode.CorrectLevel.M});
-  }
-}
-
-// ── CONFIG ──
+// ══════════════════════════════════════
+// CONFIG — igual que settings.tsx
+// ══════════════════════════════════════
 function loadConfig(){
   document.getElementById('config-content').innerHTML=`
     <div class="config-section">
@@ -623,7 +692,7 @@ function loadConfig(){
     <div class="config-section">
       <div class="config-title">Métodos de pago</div>
       <div class="info-row"><span class="info-key">💳 Tarjeta de crédito / débito</span><span class="info-val" style="color:#555;font-size:11px;">Por pago</span></div>
-      <div class="info-row" style="opacity:0.4;"><span class="info-key">📱 NFC / Tap to Pay</span><span class="info-val" style="color:#555;font-size:11px;">Próximamente</span></div>
+      <div class="info-row" style="opacity:0.4"><span class="info-key">📱 NFC / Tap to Pay</span><span class="info-val" style="color:#555;font-size:11px;">Próximamente</span></div>
     </div>
     <button class="btn btn-red" onclick="signOut()">Cerrar sesión</button>`;
 }
