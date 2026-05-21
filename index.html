@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="manifest" href="manifest.json"/>
+  <meta name="theme-color" content="#FFE118"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="PARKEA"/>
+  <link rel="apple-touch-icon" href="icons/icon-192.png"/>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js');
+      });
+    }
+  </script>
+  <title>PARKEA — Iniciar sesión</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:#0A0A0A;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
+    .wrap{width:100%;max-width:420px;}
+
+    /* Logo */
+    .logo-area{text-align:center;margin-bottom:40px;}
+    .logo-img{width:90px;height:90px;border-radius:22px;margin-bottom:14px;object-fit:cover;}
+    .logo-name{color:#FFE118;font-size:30px;font-weight:900;letter-spacing:8px;}
+    .logo-tag{color:#333;font-size:10px;letter-spacing:3px;text-transform:uppercase;margin-top:4px;}
+
+    /* Tabs login/registro */
+    .tabs{display:flex;background:#111;border-radius:14px;padding:4px;margin-bottom:20px;border:1px solid #2C2C2C;}
+    .tab{flex:1;padding:10px;border-radius:10px;border:none;background:transparent;color:#555;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s;}
+    .tab.active{background:#1A1A1A;color:#FFE118;box-shadow:0 1px 4px #0008;}
+
+    /* Card */
+    .card{background:#1A1A1A;border-radius:22px;padding:24px;border:1px solid #2C2C2C;}
+    .card-title{color:#FFF;font-size:18px;font-weight:800;margin-bottom:4px;}
+    .card-sub{color:#555;font-size:12px;margin-bottom:22px;}
+
+    /* Fields */
+    .field{margin-bottom:16px;}
+    .field label{display:block;color:#888;font-size:10px;letter-spacing:1px;text-transform:uppercase;margin-bottom:7px;}
+    .field input{width:100%;background:#111;border:1.5px solid #2C2C2C;border-radius:12px;padding:14px 16px;color:#FFF;font-size:15px;font-weight:500;outline:none;-webkit-appearance:none;}
+    .field input:focus{border-color:#FFE118;}
+    .input-wrap{position:relative;}
+    .input-wrap input{padding-right:46px;}
+    .eye-btn{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#555;font-size:18px;padding:4px;}
+
+    /* Error */
+    .error-box{background:#FF444415;border-radius:10px;border:1px solid #FF444433;padding:12px;margin-bottom:14px;color:#FF4444;font-size:12px;text-align:center;display:none;}
+
+    /* Botón principal */
+    .btn-main{width:100%;padding:16px;border-radius:14px;border:none;background:#FFE118;color:#0A0A0A;font-size:15px;font-weight:900;cursor:pointer;margin-top:4px;box-shadow:0 0 22px #FFE11844;}
+    .btn-main:disabled{background:#333;color:#666;cursor:not-allowed;box-shadow:none;}
+
+    /* Spinner */
+    .spinner-sm{width:18px;height:18px;border:2px solid #0A0A0A44;border-top:2px solid #0A0A0A;border-radius:50%;animation:spin 0.8s linear infinite;display:inline-block;vertical-align:middle;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+
+    /* Panel oculto */
+    .panel{display:none;}
+    .panel.active{display:block;}
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Logo -->
+  <div class="logo-area">
+    <img src="icons/icon.png" class="logo-img" alt="PARKEA" onerror="this.style.display='none'"/>
+    <div class="logo-name">PARKEA</div>
+    <div class="logo-tag">Sin boleto · Sin fila</div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('login')">Iniciar sesión</button>
+    <button class="tab" onclick="showTab('register')">Crear cuenta</button>
+  </div>
+
+  <!-- Login -->
+  <div id="panel-login" class="panel active">
+    <div class="card">
+      <div class="card-title">Bienvenida</div>
+      <div class="card-sub">Ingresa con tu cuenta PARKEA</div>
+
+      <div class="field">
+        <label>Correo electrónico</label>
+        <input type="email" id="login-email" placeholder="tu@correo.com" autocomplete="email" inputmode="email"/>
+      </div>
+      <div class="field">
+        <label>Contraseña</label>
+        <div class="input-wrap">
+          <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password"/>
+          <button class="eye-btn" onclick="togglePass('login-pass', this)">👁</button>
+        </div>
+      </div>
+
+      <div class="error-box" id="login-error"></div>
+
+      <button class="btn-main" id="btn-login" onclick="handleLogin()">Entrar</button>
+    </div>
+  </div>
+
+  <!-- Registro -->
+  <div id="panel-register" class="panel">
+    <div class="card">
+      <div class="card-title">Crear cuenta</div>
+      <div class="card-sub">Regístrate para usar PARKEA</div>
+
+      <div class="field">
+        <label>Nombre completo</label>
+        <input type="text" id="reg-name" placeholder="Tu nombre" autocomplete="name"/>
+      </div>
+      <div class="field">
+        <label>Correo electrónico</label>
+        <input type="email" id="reg-email" placeholder="tu@correo.com" autocomplete="email" inputmode="email"/>
+      </div>
+      <div class="field">
+        <label>Contraseña</label>
+        <div class="input-wrap">
+          <input type="password" id="reg-pass" placeholder="Mínimo 6 caracteres" autocomplete="new-password"/>
+          <button class="eye-btn" onclick="togglePass('reg-pass', this)">👁</button>
+        </div>
+      </div>
+
+      <div class="error-box" id="reg-error"></div>
+
+      <button class="btn-main" id="btn-register" onclick="handleRegister()">Crear cuenta</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const SUPABASE_URL  = 'https://pjpquwrrmjfzdcicvssm.supabase.co';
+  const SUPABASE_ANON = 'sb_publishable_vDACoUwPW_ql0KAtqXXF6g_hQbbFdn3';
+
+  // Redirigir si ya hay sesión
+  const saved = localStorage.getItem('parkea_session');
+  if(saved){
+    try {
+      const s = JSON.parse(saved);
+      if(s.access_token && s.expires_at > Date.now()/1000) {
+        window.location.href = 'app.html';
+      }
+    } catch(e){ localStorage.removeItem('parkea_session'); }
+  }
+
+  function showTab(tab){
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-'+tab).classList.add('active');
+    event.target.classList.add('active');
+  }
+
+  function togglePass(id, btn){
+    const input = document.getElementById(id);
+    if(input.type === 'password'){ input.type = 'text'; btn.textContent = '🙈'; }
+    else { input.type = 'password'; btn.textContent = '👁'; }
+  }
+
+  function showError(id, msg){
+    const el = document.getElementById(id);
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  function hideError(id){
+    document.getElementById(id).style.display = 'none';
+  }
+
+  function setLoading(btnId, loading){
+    const btn = document.getElementById(btnId);
+    if(loading){
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner-sm"></span>';
+    } else {
+      btn.disabled = false;
+      btn.textContent = btnId === 'btn-login' ? 'Entrar' : 'Crear cuenta';
+    }
+  }
+
+  async function supabaseFetch(path, body){
+    const res = await fetch(`${SUPABASE_URL}${path}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON,
+      },
+      body: JSON.stringify(body),
+    });
+    return { res, data: await res.json() };
+  }
+
+  function saveSession(session){
+    localStorage.setItem('parkea_session', JSON.stringify({
+      access_token:  session.access_token,
+      refresh_token: session.refresh_token,
+      expires_at:    session.expires_at,
+      user:          session.user,
+    }));
+  }
+
+  async function handleLogin(){
+    hideError('login-error');
+    const email = document.getElementById('login-email').value.trim();
+    const pass  = document.getElementById('login-pass').value;
+    if(!email || !pass){ showError('login-error','Completa todos los campos'); return; }
+
+    setLoading('btn-login', true);
+    const { res, data } = await supabaseFetch(
+      '/auth/v1/token?grant_type=password',
+      { email, password: pass }
+    );
+    setLoading('btn-login', false);
+
+    if(!res.ok){
+      showError('login-error', 'Correo o contraseña incorrectos');
+      return;
+    }
+    saveSession(data);
+    window.location.href = 'app.html';
+  }
+
+  async function handleRegister(){
+    hideError('reg-error');
+    const name  = document.getElementById('reg-name').value.trim();
+    const email = document.getElementById('reg-email').value.trim();
+    const pass  = document.getElementById('reg-pass').value;
+
+    if(!name || !email || !pass){ showError('reg-error','Completa todos los campos'); return; }
+    if(pass.length < 6){ showError('reg-error','La contraseña debe tener al menos 6 caracteres'); return; }
+
+    setLoading('btn-register', true);
+    const { res, data } = await supabaseFetch('/auth/v1/signup', {
+      email,
+      password: pass,
+      data: { full_name: name },
+    });
+    setLoading('btn-register', false);
+
+    if(!res.ok){
+      showError('reg-error', data.error_description ?? data.msg ?? 'Error al registrarse');
+      return;
+    }
+
+    // Auto-login después de registro
+    const { res: r2, data: d2 } = await supabaseFetch(
+      '/auth/v1/token?grant_type=password',
+      { email, password: pass }
+    );
+    if(r2.ok){
+      saveSession(d2);
+      window.location.href = 'app.html';
+    } else {
+      showError('reg-error','Cuenta creada. Inicia sesión.');
+      showTab('login');
+    }
+  }
+
+  // Enter para submit
+  document.addEventListener('keydown', e => {
+    if(e.key !== 'Enter') return;
+    if(document.getElementById('panel-login').classList.contains('active')) handleLogin();
+    else handleRegister();
+  });
+</script>
+</body>
+</html>
