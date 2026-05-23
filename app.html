@@ -646,27 +646,223 @@ function renderPaid(ticket){
 }
 
 // ══════════════════════════════════════
-// HISTORIAL
+// HISTORIAL — con rango de fechas y filtro por mes
 // ══════════════════════════════════════
-async function loadHistory(){
-  loadingEl('history-content');
-  const res=await fetch(`${SUPABASE_URL}/rest/v1/tickets?user_id=eq.${USER.id}&order=entry_at.desc&limit=30`,{headers:authH()});
-  const data=await res.json();
-  if(!data||data.length===0){
-    document.getElementById('history-content').innerHTML=`<div class="empty-state"><div class="empty-icon">🕐</div><div class="empty-title">Sin historial</div><div class="empty-sub">Aquí aparecerán tus visitas anteriores</div></div>`;
-    return;
-  }
-  const sL={active:'ACTIVO',paid:'PAGADO',exited:'COMPLETADO',fined:'MULTADO'};
-  const sC={active:'#00C853',paid:'#1C6EF7',exited:'#00C853',fined:'#FF4444'};
-  document.getElementById('history-content').innerHTML=data.map(t=>`
-    <div class="hist-item">
-      <div><div class="hist-token">${t.qr_token??t.id.slice(0,8)}</div>
-      <div class="hist-date">${fmtDate(t.entry_at)} · ${fmtTime(t.entry_at)}</div>
-      <div style="color:#555;font-size:10px;margin-top:2px;">Cajón ${t.spot_id??'—'}</div></div>
-      <div><div class="hist-amount">$${t.amount_mxn??0} MXN</div>
-      <div class="hist-status" style="color:${sC[t.status]??'#555'}">● ${sL[t.status]??t.status.toUpperCase()}</div></div>
-    </div>`).join('');
+const STATUS_COLOR_H = {active:'#00C853',paid:'#1C6EF7',exited:'#00C853',fined:'#FF4444'};
+const STATUS_LABEL_H = {active:'Activo',paid:'Pagado',exited:'Completado',fined:'Multado'};
+
+let allTickets = [];
+let histRangeFrom = '';
+let histRangeTo   = '';
+let histMonth     = 'all';
+
+function initHistDates(){
+  const now = new Date();
+  histRangeTo   = now.toISOString().split('T')[0];
+  const first   = new Date(now.getFullYear(), now.getMonth(), 1);
+  histRangeFrom = first.toISOString().split('T')[0];
 }
+
+function getMonthOptions(){
+  const opts = [{v:'all',l:'Todos los meses'}];
+  const now = new Date();
+  for(let i=0;i<12;i++){
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    const v = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    const l = d.toLocaleDateString('es-MX',{month:'long',year:'numeric'});
+    opts.push({v, l: l.charAt(0).toUpperCase()+l.slice(1)});
+  }
+  return opts;
+}
+
+function fmtDuration(entryAt, paidAt){
+  const end = paidAt ? new Date(paidAt).getTime() : Date.now();
+  const mins = Math.floor((end - new Date(entryAt).getTime())/60000);
+  if(mins < 60) return `${mins} min`;
+  return `${Math.floor(mins/60)}h ${mins%60}m`;
+}
+
+function fmtDateLabel(iso){
+  const d = new Date(iso);
+  const today = new Date();
+  const yest  = new Date(today); yest.setDate(today.getDate()-1);
+  if(d.toDateString()===today.toDateString()) return 'Hoy';
+  if(d.toDateString()===yest.toDateString())  return 'Ayer';
+  return d.toLocaleDateString('es-MX',{weekday:'short',day:'2-digit',month:'short'});
+}
+
+async function loadHistory(){
+  if(!histRangeFrom) initHistDates();
+  loadingEl('history-content');
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/tickets?user_id=eq.${USER.id}&order=entry_at.desc&limit=100`,{headers:authH()});
+  allTickets = await res.json() || [];
+  renderHistory();
+}
+
+function renderHistory(){
+  // Lista filtrada por mes
+  const list = allTickets.filter(t => {
+    if(histMonth === 'all') return true;
+    return t.entry_at.slice(0,7) === histMonth;
+  });
+
+  // Stats filtradas por rango
+  const range = allTickets.filter(t => {
+    const d = t.entry_at.split('T')[0];
+    return d >= histRangeFrom && d <= histRangeTo && (t.status==='paid'||t.status==='exited');
+  });
+  const totalSpent = range.reduce((s,t)=>s+(t.amount_mxn||0),0);
+  const avgMins = range.length > 0
+    ? Math.round(range.reduce((s,t)=>{
+        const end = t.paid_at ? new Date(t.paid_at).getTime() : Date.now();
+        return s + (end - new Date(t.entry_at).getTime())/60000;
+      },0) / range.length)
+    : 0;
+  const avgLabel = avgMins<60 ? `${avgMins} min` : `${Math.floor(avgMins/60)}h ${avgMins%60}m`;
+
+  const monthOpts = getMonthOptions();
+  const monthLabel = monthOpts.find(o=>o.v===histMonth)?.l || 'Todos los meses';
+  const fromLabel  = new Date(histRangeFrom).toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'});
+  const toLabel    = new Date(histRangeTo).toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'});
+
+  const listHtml = list.length === 0
+    ? `<div class="empty-state"><div class="empty-icon">🕐</div><div class="empty-title">Sin visitas</div><div class="empty-sub">No hay visitas en este periodo</div></div>`
+    : list.map(t => {
+        const sc = STATUS_COLOR_H[t.status]||'#555';
+        const sl = STATUS_LABEL_H[t.status]||t.status;
+        return `
+        <div style="background:#1A1A1A;border-radius:16px;padding:14px;margin-bottom:10px;border:1px solid #2C2C2C;display:flex;align-items:center;gap:12px;">
+          <div style="width:44px;height:44px;min-width:44px;border-radius:12px;background:${sc}22;border:1.5px solid ${sc}66;display:flex;align-items:center;justify-content:center;">
+            <span style="color:${sc};font-size:18px;font-weight:900;">P</span>
+          </div>
+          <div style="flex:1;">
+            <div style="color:#FFF;font-size:14px;font-weight:700;">Cajón ${t.spot_id||'—'}</div>
+            <div style="color:#555;font-size:11px;margin-top:2px;">${fmtDateLabel(t.entry_at)} ${fmtTime(t.entry_at)} · ${fmtDuration(t.entry_at,t.paid_at)}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="color:${t.status==='fined'?'#FF4444':'#FFE118'};font-size:14px;font-weight:800;">$${t.amount_mxn||0} MXN</div>
+            <div style="background:${sc}22;border:1px solid ${sc}44;border-radius:8px;padding:3px 8px;margin-top:4px;display:inline-block;">
+              <span style="color:${sc};font-size:10px;font-weight:700;">${sl}</span>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+
+  document.getElementById('history-content').innerHTML = `
+    <!-- Selector rango -->
+    <div style="background:#1A1A1A;border-radius:16px;padding:14px;margin-bottom:12px;border:1px solid #2C2C2C;">
+      <div style="color:#555;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Rango de análisis</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="flex:1;background:#111;border-radius:12px;padding:12px;border:1px solid #2C2C2C;cursor:pointer;" onclick="showDatePicker('from')">
+          <div style="color:#555;font-size:9px;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;">Desde</div>
+          <div style="color:#FFF;font-size:12px;font-weight:700;">${fromLabel}</div>
+        </div>
+        <div style="color:#555;font-size:16px;">→</div>
+        <div style="flex:1;background:#111;border-radius:12px;padding:12px;border:1px solid #2C2C2C;cursor:pointer;" onclick="showDatePicker('to')">
+          <div style="color:#555;font-size:9px;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;">Hasta</div>
+          <div style="color:#FFF;font-size:12px;font-weight:700;">${toLabel}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+      <div style="background:#1A1A1A;border-radius:16px;padding:14px;border:1.5px solid #FFE11844;">
+        <div style="color:#FFE118;font-size:28px;font-weight:900;line-height:1.1;">$${totalSpent}</div>
+        <div style="color:#FFF;font-size:11px;font-weight:700;margin-top:4px;">Gastado</div>
+        <div style="color:#555;font-size:10px;margin-top:2px;">MXN este periodo</div>
+      </div>
+      <div style="background:#1A1A1A;border-radius:16px;padding:14px;border:1.5px solid #1C6EF744;">
+        <div style="color:#1C6EF7;font-size:28px;font-weight:900;line-height:1.1;">${range.length>0?avgLabel:'—'}</div>
+        <div style="color:#FFF;font-size:11px;font-weight:700;margin-top:4px;">Tiempo prom.</div>
+        <div style="color:#555;font-size:10px;margin-top:2px;">por visita</div>
+      </div>
+    </div>
+
+    <!-- Filtro mes -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div style="color:#555;font-size:10px;letter-spacing:2px;text-transform:uppercase;">Últimas visitas</div>
+      <div style="display:flex;align-items:center;gap:6px;background:#1A1A1A;border-radius:10px;padding:7px 12px;border:1px solid #2C2C2C;cursor:pointer;" onclick="showMonthPicker()">
+        <span style="color:#FFF;font-size:12px;font-weight:600;">${monthLabel}</span>
+        <span style="color:#555;font-size:12px;">▾</span>
+      </div>
+    </div>
+
+    ${listHtml}
+
+    <!-- Modal fecha -->
+    <div id="date-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:#000000AA;z-index:200;align-items:center;justify-content:center;padding:24px;">
+      <div style="background:#1A1A1A;border-radius:20px;padding:20px;border:1px solid #2C2C2C;width:100%;max-width:400px;">
+        <div style="color:#FFF;font-size:16px;font-weight:800;margin-bottom:16px;" id="date-modal-title">Seleccionar fecha</div>
+        <div id="date-modal-body"></div>
+        <div style="display:flex;gap:10px;margin-top:8px;">
+          <button onclick="closeDatePicker()" style="flex:1;padding:14px;border-radius:12px;border:none;background:#2C2C2C;color:#FFF;font-weight:700;cursor:pointer;">Cancelar</button>
+          <button onclick="confirmDate()" style="flex:1;padding:14px;border-radius:12px;border:none;background:#FFE118;color:#0A0A0A;font-weight:900;cursor:pointer;">Confirmar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal mes -->
+    <div id="month-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:#000000AA;z-index:200;align-items:center;justify-content:center;padding:24px;">
+      <div style="background:#1A1A1A;border-radius:20px;padding:20px;border:1px solid #2C2C2C;width:100%;max-width:400px;">
+        <div style="color:#FFF;font-size:16px;font-weight:800;margin-bottom:16px;">Filtrar por mes</div>
+        <div style="max-height:300px;overflow-y:auto;">
+          ${monthOpts.map(o=>`
+            <div onclick="selectMonth('${o.v}')" style="display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid #2C2C2C;cursor:pointer;background:${histMonth===o.v?'#FFE11808':'transparent'}">
+              <span style="color:${histMonth===o.v?'#FFE118':'#FFF'};font-size:14px;">${o.l}</span>
+              ${histMonth===o.v?'<span style="color:#FFE118">✓</span>':''}
+            </div>`).join('')}
+        </div>
+        <button onclick="closeMonthPicker()" style="width:100%;padding:14px;border-radius:12px;border:none;background:#2C2C2C;color:#FFF;font-weight:700;cursor:pointer;margin-top:12px;">Cerrar</button>
+      </div>
+    </div>`;
+}
+
+let datePickerTarget = 'from';
+let dpYear=2026, dpMonth=1, dpDay=1;
+
+function showDatePicker(target){
+  datePickerTarget = target;
+  const val = target==='from' ? histRangeFrom : histRangeTo;
+  const [y,m,d] = val.split('-').map(Number);
+  dpYear=y; dpMonth=m; dpDay=d;
+  document.getElementById('date-modal-title').textContent = target==='from'?'Fecha desde':'Fecha hasta';
+  renderDatePickerBody();
+  document.getElementById('date-modal').style.display='flex';
+}
+
+function renderDatePickerBody(){
+  const years=[2025,2026,2027];
+  const months=[{v:1,l:'Ene'},{v:2,l:'Feb'},{v:3,l:'Mar'},{v:4,l:'Abr'},{v:5,l:'May'},{v:6,l:'Jun'},{v:7,l:'Jul'},{v:8,l:'Ago'},{v:9,l:'Sep'},{v:10,l:'Oct'},{v:11,l:'Nov'},{v:12,l:'Dic'}];
+  const daysInMonth = new Date(dpYear, dpMonth, 0).getDate();
+  document.getElementById('date-modal-body').innerHTML=`
+    <div style="color:#555;font-size:10px;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Año</div>
+    <div style="display:flex;gap:6px;margin-bottom:14px;">
+      ${years.map(yr=>`<button onclick="dpYear=${yr};renderDatePickerBody()" style="flex:1;padding:8px;border-radius:10px;border:1px solid ${dpYear===yr?'#FFE11888':'#2C2C2C'};background:${dpYear===yr?'#FFE11822':'#111'};color:${dpYear===yr?'#FFE118':'#555'};font-weight:700;cursor:pointer;">${yr}</button>`).join('')}
+    </div>
+    <div style="color:#555;font-size:10px;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Mes</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;">
+      ${months.map(mo=>`<button onclick="dpMonth=${mo.v};renderDatePickerBody()" style="padding:7px 10px;border-radius:10px;border:1px solid ${dpMonth===mo.v?'#FFE11888':'#2C2C2C'};background:${dpMonth===mo.v?'#FFE11822':'#111'};color:${dpMonth===mo.v?'#FFE118':'#555'};font-weight:600;cursor:pointer;">${mo.l}</button>`).join('')}
+    </div>
+    <div style="color:#555;font-size:10px;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Día</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;">
+      ${Array.from({length:daysInMonth},(_,i)=>i+1).map(dy=>`<button onclick="dpDay=${dy};renderDatePickerBody()" style="width:36px;height:36px;border-radius:10px;border:1px solid ${dpDay===dy?'#FFE11888':'#2C2C2C'};background:${dpDay===dy?'#FFE11822':'#111'};color:${dpDay===dy?'#FFE118':'#555'};font-weight:600;cursor:pointer;">${dy}</button>`).join('')}
+    </div>`;
+}
+
+function confirmDate(){
+  const val=`${dpYear}-${String(dpMonth).padStart(2,'0')}-${String(dpDay).padStart(2,'0')}`;
+  if(datePickerTarget==='from') histRangeFrom=val;
+  else histRangeTo=val;
+  closeDatePicker();
+  renderHistory();
+}
+
+function closeDatePicker(){ document.getElementById('date-modal').style.display='none'; }
+
+function showMonthPicker(){ document.getElementById('month-modal').style.display='flex'; }
+function closeMonthPicker(){ document.getElementById('month-modal').style.display='none'; }
+function selectMonth(v){ histMonth=v; closeMonthPicker(); renderHistory(); }
 
 // ══════════════════════════════════════
 // CONFIG — igual que settings.tsx
