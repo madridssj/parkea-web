@@ -517,7 +517,7 @@ async function loadPay(){
     <div style="color:#FFF;font-size:18px;font-weight:700;margin-top:2px;">Pagar <span style="color:#FFE118">estancia</span></div>
   </div>`;
 
-  if(currentTicket && currentTicket.status==='paid'){
+  if(currentTicket && (currentTicket.status==='paid' || currentTicket.status==='exited')){
     goTab('ticket');
     return;
   }
