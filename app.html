@@ -507,16 +507,21 @@ function loadScan(){
 // ══════════════════════════════════════
 async function loadPay(){
   loadingEl('pay-content');
-  if(!currentTicket){
-    const res=await fetch(`${SUPABASE_URL}/rest/v1/tickets?user_id=eq.${USER.id}&status=in.(active,paid)&order=entry_at.desc&limit=1`,{headers:authH()});
-    const data=await res.json();
-    currentTicket=data?.length>0?data[0]:null;
-  }
+  // Siempre recargar desde Supabase
+  const res=await fetch(`${SUPABASE_URL}/rest/v1/tickets?user_id=eq.${USER.id}&status=in.(active,paid)&order=entry_at.desc&limit=1`,{headers:authH()});
+  const data=await res.json();
+  currentTicket=data?.length>0?data[0]:null;
 
   const header=`<div style="padding:56px 0 4px;">
     <div class="h-sub">Checkout · Solo en app</div>
     <div style="color:#FFF;font-size:18px;font-weight:700;margin-top:2px;">Pagar <span style="color:#FFE118">estancia</span></div>
   </div>`;
+
+  // Si ticket ya pagado, mostrar QR directamente
+  if(currentTicket && currentTicket.status==='paid'){
+    goTab('ticket');
+    return;
+  }
 
   if(!currentTicket){
     document.getElementById('pay-content').innerHTML=`${header}
