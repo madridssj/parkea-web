@@ -517,11 +517,23 @@ async function loadPay(){
     <div style="color:#FFF;font-size:18px;font-weight:700;margin-top:2px;">Pagar <span style="color:#FFE118">estancia</span></div>
   </div>`;
 
-  // Si ticket ya pagado, mostrar QR directamente
   if(currentTicket && currentTicket.status==='paid'){
     goTab('ticket');
     return;
   }
+
+  if(!currentTicket){
+    document.getElementById('pay-content').innerHTML=`${header}
+      <div class="empty-state">
+        <div class="empty-icon">💳</div>
+        <div class="empty-title">Sin ticket activo</div>
+        <div class="empty-sub">Escanea el QR del estacionamiento<br/>para registrar tu entrada</div>
+      </div>`;
+    return;
+  }
+  if(currentTicket.status==='paid'){ goTab('ticket'); return; }
+  renderPayForm();
+
 
   if(!currentTicket){
     document.getElementById('pay-content').innerHTML=`${header}
