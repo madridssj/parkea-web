@@ -3,104 +3,119 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <!-- PWA -->
   <link rel="manifest" href="manifest.json"/>
-  <meta name="theme-color" content="#FFE118"/>
+  <meta name="theme-color" content="#0A0A0A"/>
   <meta name="mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
   <meta name="apple-mobile-web-app-title" content="PARKEA"/>
   <link rel="apple-touch-icon" href="icons/icon-192.png"/>
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('service-worker.js');
-      });
-    }
-  </script>
+  <script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('service-worker.js'));}</script>
   <title>PARKEA — Tu boleto</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0;}
-    body{background:#0A0A0A;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;padding:16px;}
+    body{background:#0A0A0A;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;padding:16px 16px 32px;}
+
+    /* Brand */
     .brand{text-align:center;margin-bottom:20px;padding-top:16px;}
     .brand h1{font-size:28px;font-weight:900;letter-spacing:6px;color:#FFE118;}
     .brand p{font-size:9px;letter-spacing:3px;color:#333;margin-top:4px;text-transform:uppercase;}
+
+    /* Cards */
     .card{background:#1A1A1A;border-radius:20px;padding:16px;margin-bottom:12px;border:1px solid #2C2C2C;}
     .row-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
     .spot-label{font-size:9px;color:#555;text-transform:uppercase;letter-spacing:1.5px;}
     .spot-val{font-size:18px;font-weight:800;color:#FFF;margin-top:3px;}
-    .spot-val span{color:#1C6EF7;}
-    .badge{background:#00C85318;border:1px solid #00C85344;border-radius:8px;padding:4px 10px;font-size:9px;font-weight:800;color:#00C853;letter-spacing:1px;}
+    .spot-val span{color:#FFE118;}
+    .badge-active{background:#00C85318;border:1px solid #00C85344;border-radius:8px;padding:4px 10px;font-size:9px;font-weight:800;color:#00C853;letter-spacing:1px;}
+    .badge-paid{background:#1C6EF718;border:1px solid #1C6EF744;border-radius:8px;padding:4px 10px;font-size:9px;font-weight:800;color:#1C6EF7;letter-spacing:1px;}
+
+    /* Timer */
     .timer-box{background:#111;border-radius:14px;padding:16px;text-align:center;margin-bottom:12px;border:1px solid #FFE11822;}
     .timer-lbl{font-size:8px;color:#555;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
-    #timer{color:#FFE118;font-size:40px;font-weight:900;font-family:'Courier New',monospace;letter-spacing:-1px;}
-    #courtesy{background:#00C85318;border-radius:6px;padding:4px 12px;display:inline-block;font-size:10px;color:#00C853;font-weight:700;margin-top:10px;}
+    .timer-txt{color:#FFE118;font-size:42px;font-weight:900;font-family:'Courier New',monospace;letter-spacing:-1px;}
     .cost-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #222;}
     .cost-lbl{font-size:12px;color:#555;}
-    #cost{font-size:22px;font-weight:900;color:#FFE118;}
+    .courtesy-badge{background:#00C85318;border-radius:6px;padding:4px 12px;display:inline-block;font-size:10px;color:#00C853;font-weight:700;margin-top:8px;}
+
+    /* Info rows */
     .info-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #1E1E1E;}
     .info-row:last-child{border:none;}
     .info-key{font-size:11px;color:#555;}
     .info-val{font-size:11px;font-weight:700;color:#FFF;}
+
+    /* Fares */
     .fares{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
     .fare-cell{background:#1A1A1A;border-radius:12px;padding:10px 6px;text-align:center;border:1px solid #2C2C2C;}
     .fare-amt{font-size:15px;font-weight:900;}
     .fare-unit{color:#FFF;font-size:8px;margin-top:2px;}
     .fare-lbl{color:#555;font-size:8px;margin-top:2px;}
-    .btn-pay{display:block;width:100%;padding:15px;border-radius:14px;border:none;background:#FFE118;color:#0A0A0A;font-size:15px;font-weight:900;cursor:pointer;text-align:center;margin-bottom:10px;}
-    .btn-pay:disabled{background:#333;color:#666;cursor:not-allowed;}
-    .btn-app{display:block;width:100%;padding:11px;border-radius:14px;border:1px solid #2C2C2C;background:transparent;color:#555;font-size:12px;cursor:pointer;text-decoration:none;text-align:center;}
-    .btn-apk{display:block;width:100%;padding:15px;border-radius:14px;border:none;background:#FFE118;color:#0A0A0A;font-size:15px;font-weight:900;cursor:pointer;text-decoration:none;text-align:center;margin-bottom:10px;}
-    .pay-form{background:#111;border-radius:18px;padding:16px;margin-bottom:12px;border:1.5px solid #FFE11833;}
-    .pay-form-title{color:#FFE118;font-size:13px;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;}
-    .field{margin-bottom:12px;}
-    .field label{display:block;color:#888;font-size:10px;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;}
-    .field input{width:100%;background:#1A1A1A;border:1.5px solid #2C2C2C;border-radius:12px;padding:13px 14px;color:#FFF;font-size:14px;font-weight:600;outline:none;-webkit-appearance:none;}
-    .field input:focus{border-color:#FFE118;}
-    .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-    .secure-note{color:#333;font-size:10px;text-align:center;margin-top:8px;}
-    .cta{background:#111;border-radius:18px;padding:20px 16px;margin-bottom:12px;border:1.5px solid #FFE11833;text-align:center;}
-    .cta h3{color:#FFE118;font-size:16px;font-weight:900;margin-bottom:6px;}
-    .cta p{color:#555;font-size:12px;line-height:1.6;margin-bottom:16px;}
-    .cta p strong{color:#FFF;}
-    .qr-section{background:#1A1A1A;border-radius:20px;padding:20px;margin-bottom:12px;border:1px solid #2C2C2C;text-align:center;}
-    .qr-section-lbl{color:#555;font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;}
-    .qr-img-wrap{background:#FFF;border-radius:12px;padding:10px;display:inline-block;margin-bottom:12px;}
-    .qr-token-txt{color:#FFE118;font-size:14px;font-weight:700;letter-spacing:2px;}
-    .qr-sub{color:#555;font-size:11px;margin-top:6px;}
-    .success-banner{display:flex;align-items:center;gap:14px;background:#00C85312;border-radius:14px;padding:16px;margin-bottom:14px;border:1.5px solid #00C85333;}
-    .success-icon{width:40px;height:40px;border-radius:20px;background:#00C85322;border:1.5px solid #00C853;display:flex;align-items:center;justify-content:center;color:#00C853;font-size:20px;font-weight:900;flex-shrink:0;}
-    .success-title{color:#00C853;font-size:15px;font-weight:800;}
-    .success-sub{color:#555;font-size:12px;margin-top:2px;}
-    .success-sub strong{color:#FFF;}
-    .free-banner{background:#00C85312;border-radius:14px;padding:20px;margin-bottom:12px;border:1.5px solid #00C85333;text-align:center;}
-    .warning{background:#1A0808;border-radius:14px;padding:14px;border:1px solid #FF444422;display:flex;align-items:center;gap:12px;margin-bottom:24px;}
+
+    /* Buttons */
+    .btn{width:100%;padding:15px;border-radius:14px;border:none;font-size:15px;font-weight:900;cursor:pointer;margin-bottom:10px;text-align:center;display:block;}
+    .btn-yellow{background:#FFE118;color:#0A0A0A;box-shadow:0 0 22px #FFE11844;}
+    .btn-outline{background:transparent;color:#FFF;border:1.5px solid #2C2C2C;}
+    .btn-apk{background:#FFE118;color:#0A0A0A;text-decoration:none;}
+
+    /* Warning */
+    .warning{background:#1A0808;border-radius:14px;padding:14px;border:1px solid #FF444422;display:flex;align-items:center;gap:12px;margin-bottom:12px;}
     .warn-icon{width:28px;height:28px;border-radius:14px;background:#FF444418;border:1px solid #FF444444;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#FF4444;font-weight:900;font-size:14px;}
     .warn-text{color:#FF4444;font-size:11px;font-weight:700;}
     .warn-desc{color:#555;font-size:10px;margin-top:2px;}
-    .error-box{background:#FF444415;border-radius:10px;border:1px solid #FF444433;padding:12px;margin-bottom:12px;color:#FF4444;font-size:12px;text-align:center;}
+
+    /* QR salida */
+    .qr-section{background:#1A1A1A;border-radius:20px;padding:20px;margin-bottom:12px;border:1px solid #2C2C2C;text-align:center;}
+    .qr-lbl{color:#555;font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;}
+    .qr-wrap{background:#FFF;border-radius:12px;padding:10px;display:inline-block;margin-bottom:12px;}
+    .qr-token{color:#FFE118;font-size:14px;font-weight:700;letter-spacing:2px;}
+    .qr-sub{color:#555;font-size:11px;margin-top:6px;}
+    .success-banner{display:flex;align-items:center;gap:14px;background:#00C85312;border-radius:14px;padding:16px;margin-bottom:14px;border:1.5px solid #00C85333;}
+    .success-icon{width:40px;height:40px;border-radius:20px;background:#00C85322;border:1.5px solid #00C853;display:flex;align-items:center;justify-content:center;color:#00C853;font-size:20px;font-weight:900;flex-shrink:0;}
+
+    /* Pay form */
+    .pay-form{background:#1A1A1A;border-radius:18px;padding:16px;margin-bottom:12px;border:1px solid #2C2C2C;}
+    .pay-form-title{color:#555;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;}
+    .field{margin-bottom:12px;}
+    .field label{display:block;color:#888;font-size:10px;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;}
+    .field input{width:100%;background:#111;border:1.5px solid #2C2C2C;border-radius:12px;padding:13px 14px;color:#FFF;font-size:14px;font-weight:600;outline:none;-webkit-appearance:none;}
+    .field input:focus{border-color:#FFE118;}
+    .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    .secure-note{color:#333;font-size:10px;text-align:center;margin-top:8px;}
+    .free-banner{background:#00C85312;border-radius:14px;padding:20px;margin-bottom:12px;border:1.5px solid #00C85333;text-align:center;}
+    .error-box{background:#FF444415;border-radius:10px;border:1px solid #FF444433;padding:12px;margin-bottom:12px;color:#FF4444;font-size:12px;text-align:center;display:none;}
+
+    /* ── LOGIN MODAL ── */
+    .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:#000000CC;z-index:300;display:flex;align-items:flex-end;justify-content:center;}
+    .modal-sheet{background:#111;border-radius:24px 24px 0 0;padding:24px 20px 40px;width:100%;max-width:480px;border-top:1px solid #2C2C2C;}
+    .modal-handle{width:40px;height:4px;border-radius:2px;background:#333;margin:0 auto 20px;}
+    .modal-title{color:#FFF;font-size:18px;font-weight:800;margin-bottom:4px;}
+    .modal-sub{color:#555;font-size:12px;margin-bottom:20px;}
+    .modal-tabs{display:flex;background:#1A1A1A;border-radius:12px;padding:4px;margin-bottom:18px;border:1px solid #2C2C2C;}
+    .modal-tab{flex:1;padding:9px;border-radius:8px;border:none;background:transparent;color:#555;font-size:13px;font-weight:700;cursor:pointer;}
+    .modal-tab.active{background:#2C2C2C;color:#FFE118;}
+    .modal-field{margin-bottom:12px;}
+    .modal-field label{display:block;color:#888;font-size:10px;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;}
+    .modal-field input{width:100%;background:#1A1A1A;border:1.5px solid #2C2C2C;border-radius:12px;padding:13px 14px;color:#FFF;font-size:14px;font-weight:600;outline:none;-webkit-appearance:none;}
+    .modal-field input:focus{border-color:#FFE118;}
+    .modal-err{background:#FF444415;border-radius:10px;border:1px solid #FF444433;padding:10px;margin-bottom:12px;color:#FF4444;font-size:12px;text-align:center;display:none;}
+
+    /* Loading / Error states */
     .loading{text-align:center;padding:60px 20px;}
     .loading p{color:#555;font-size:13px;margin-top:16px;}
     .spinner{width:40px;height:40px;border:3px solid #222;border-top:3px solid #FFE118;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto;}
-    .spinner-sm{width:18px;height:18px;border:2px solid #0A0A0A44;border-top:2px solid #0A0A0A;border-radius:50%;animation:spin 0.8s linear infinite;display:inline-block;vertical-align:middle;margin-right:6px;}
-    @keyframes spin{to{transform:rotate(360deg);}}
+    .spinner-sm{width:18px;height:18px;border:2px solid #0A0A0A44;border-top:2px solid #0A0A0A;border-radius:50%;animation:spin 0.8s linear infinite;display:inline-block;vertical-align:middle;}
     .error-state{text-align:center;padding:60px 20px;}
     .error-icon{width:64px;height:64px;border-radius:20px;background:#FF444418;border:1.5px solid #FF444433;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;}
     .error-icon span{color:#FF4444;font-size:28px;font-weight:900;}
     .error-title{color:#FF4444;font-size:18px;font-weight:800;margin-bottom:8px;}
     .error-sub{color:#555;font-size:13px;line-height:1.6;}
+    @keyframes spin{to{transform:rotate(360deg);}}
   </style>
 </head>
 <body>
-  <div class="brand">
-    <h1>PARKEA</h1>
-    <p>Sin boleto · Sin fila</p>
-  </div>
+  <div class="brand"><h1>PARKEA</h1><p>Sin boleto · Sin fila</p></div>
 
-  <div id="loading" class="loading">
-    <div class="spinner"></div>
-    <p id="loading-msg">Cargando tu boleto...</p>
-  </div>
+  <div id="loading" class="loading"><div class="spinner"></div><p id="loading-msg">Cargando tu boleto...</p></div>
 
   <!-- Ticket activo -->
   <div id="content" style="display:none;">
@@ -110,7 +125,7 @@
           <div class="spot-label">Boleto provisional</div>
           <div class="spot-val">Cajón <span id="spot">—</span></div>
         </div>
-        <div class="badge">● ACTIVO</div>
+        <div class="badge-active" id="status-badge">● ACTIVO</div>
       </div>
       <div class="timer-box">
         <div class="timer-lbl">Tiempo en estacionamiento</div>
@@ -134,89 +149,39 @@
       <div class="fare-cell"><div class="fare-amt" style="color:#1C6EF7;">$20</div><div class="fare-unit">MXN</div><div class="fare-lbl">Hora extra</div></div>
     </div>
 
-    <!-- iOS: formulario de pago directo -->
-    <div id="pay-section" style="display:none;">
-      <!-- Banner cortesía -->
-      <div id="free-banner" class="free-banner" style="display:none;">
-        <div style="font-size:32px;margin-bottom:8px;">🎉</div>
-        <div style="color:#00C853;font-size:16px;font-weight:800;margin-bottom:4px;">Salida gratuita</div>
-        <div style="color:#555;font-size:12px;">Estás dentro del periodo de cortesía</div>
-      </div>
-
-      <!-- Formulario tarjeta -->
-      <div id="card-form-wrap" class="pay-form">
-        <div class="pay-form-title">💳 Datos de tarjeta</div>
-        <div class="field">
-          <label>Número de tarjeta</label>
-          <input type="tel" id="card-number" placeholder="0000 0000 0000 0000" maxlength="19" inputmode="numeric" autocomplete="cc-number"/>
-        </div>
-        <div class="field">
-          <label>Nombre en la tarjeta</label>
-          <input type="text" id="card-name" placeholder="Como aparece en la tarjeta" autocomplete="cc-name"/>
-        </div>
-        <div class="field-row">
-          <div class="field">
-            <label>Vencimiento</label>
-            <input type="tel" id="card-expiry" placeholder="MM/AA" maxlength="5" inputmode="numeric" autocomplete="cc-exp"/>
-          </div>
-          <div class="field">
-            <label>CVV</label>
-            <input type="tel" id="card-cvv" placeholder="123" maxlength="4" inputmode="numeric" autocomplete="cc-csc"/>
-          </div>
-        </div>
-        <div class="secure-note">🔐 Pago seguro · Datos encriptados</div>
-      </div>
-
-      <div id="pay-error" class="error-box" style="display:none;"></div>
-      <button class="btn-pay" id="btn-pay" onclick="handlePay()" disabled>Completa los datos de tarjeta</button>
-      <a id="btn-app-ios" href="#" class="btn-app" style="margin-bottom:12px;">Ya tengo la app — abrir ticket</a>
-    </div>
-
-    <!-- Android / Desktop: descarga app -->
-    <div id="cta-app" class="cta" style="display:none;">
-      <h3>¿Listo para salir?</h3>
-      <p>Para pagar y obtener tu QR de salida,<br/><strong>descarga la app PARKEA</strong></p>
-      <div id="cta-android" style="display:none;">
-        <a id="btn-apk" href="#" class="btn-apk">⬇ Descargar PARKEA (.apk)</a>
-        <p style="color:#333;font-size:10px;margin:-6px 0 10px;">Android · Instalación directa · Sin cuenta</p>
-      </div>
-      <a id="btn-app" href="#" class="btn-app">Ya tengo la app — abrir ticket</a>
+    <!-- Sección de pago -->
+    <div id="pay-section">
+      <!-- Se renderiza dinámicamente -->
     </div>
 
     <div class="warning">
       <div class="warn-icon">!</div>
-      <div>
-        <div class="warn-text">Multa por tolerancia excedida</div>
-        <div class="warn-desc">+15 min después de pagar — $50 MXN adicionales</div>
-      </div>
+      <div><div class="warn-text">Multa por tolerancia excedida</div><div class="warn-desc">+15 min después de pagar — $50 MXN adicionales</div></div>
     </div>
   </div>
 
-  <!-- QR de salida (después de pagar) -->
+  <!-- Ticket pagado / QR salida -->
   <div id="paid-content" style="display:none;">
     <div class="success-banner">
       <div class="success-icon">✓</div>
       <div>
-        <div class="success-title">Pago exitoso</div>
-        <div class="success-sub">Tienes <strong>15 min</strong> para salir</div>
+        <div style="color:#00C853;font-size:15px;font-weight:800;">Pago exitoso</div>
+        <div style="color:#555;font-size:12px;margin-top:2px;">Tienes <strong style="color:#FFF;">15 min</strong> para salir</div>
       </div>
     </div>
-
     <div class="qr-section">
-      <div class="qr-section-lbl">QR de salida</div>
-      <div class="qr-img-wrap">
-        <div id="qr-canvas"></div>
-      </div>
-      <div class="qr-token-txt" id="qr-token-display"></div>
+      <div class="qr-lbl">QR de salida</div>
+      <div class="qr-wrap"><div id="qr-canvas"></div></div>
+      <div class="qr-token" id="qr-token-display"></div>
       <div class="qr-sub">Muestra este código al tótem en la salida</div>
     </div>
-
     <div class="card">
       <div class="info-row"><span class="info-key">Cajón</span><span class="info-val" id="paid-spot">—</span></div>
       <div class="info-row"><span class="info-key">Entrada</span><span class="info-val" id="paid-entry">—</span></div>
       <div class="info-row"><span class="info-key">Total pagado</span><span class="info-val" id="paid-amount">—</span></div>
       <div class="info-row"><span class="info-key">Método</span><span class="info-val">Tarjeta</span></div>
     </div>
+    <a href="app.html" class="btn btn-outline" style="text-decoration:none;text-align:center;">Ir a la app PARKEA</a>
   </div>
 
   <div id="error-state" class="error-state" style="display:none;">
@@ -225,251 +190,380 @@
     <div class="error-sub" id="error-sub">Este enlace no es válido o el ticket ya no está activo.</div>
   </div>
 
+  <!-- ── MODAL LOGIN/REGISTRO ── -->
+  <div id="auth-modal" class="modal-overlay" style="display:none;" onclick="handleOverlayClick(event)">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Iniciar sesión</div>
+      <div class="modal-sub">Para pagar tu estancia necesitas una cuenta PARKEA</div>
+      <div class="modal-tabs">
+        <button class="modal-tab active" id="tab-login" onclick="switchAuthTab('login')">Iniciar sesión</button>
+        <button class="modal-tab" id="tab-register" onclick="switchAuthTab('register')">Crear cuenta</button>
+      </div>
+
+      <!-- Login -->
+      <div id="auth-login">
+        <div class="modal-field"><label>Correo electrónico</label>
+          <input type="email" id="l-email" placeholder="tu@correo.com" inputmode="email" autocomplete="email"/>
+        </div>
+        <div class="modal-field"><label>Contraseña</label>
+          <input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password"/>
+        </div>
+      </div>
+
+      <!-- Registro -->
+      <div id="auth-register" style="display:none;">
+        <div class="modal-field"><label>Nombre completo</label>
+          <input type="text" id="r-name" placeholder="Tu nombre" autocomplete="name"/>
+        </div>
+        <div class="modal-field"><label>Correo electrónico</label>
+          <input type="email" id="r-email" placeholder="tu@correo.com" inputmode="email" autocomplete="email"/>
+        </div>
+        <div class="modal-field"><label>Contraseña</label>
+          <input type="password" id="r-pass" placeholder="Mínimo 6 caracteres" autocomplete="new-password"/>
+        </div>
+      </div>
+
+      <div class="modal-err" id="auth-err"></div>
+      <button class="btn btn-yellow" id="auth-btn" onclick="handleAuth()">Entrar</button>
+    </div>
+  </div>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script>
     const SUPABASE_URL  = 'https://pjpquwrrmjfzdcicvssm.supabase.co';
     const SUPABASE_ANON = 'sb_publishable_vDACoUwPW_ql0KAtqXXF6g_hQbbFdn3';
-    const PAYMENT_URL   = 'https://pjpquwrrmjfzdcicvssm.supabase.co/functions/v1/process-payment';
+    const PAYMENT_URL   = `${SUPABASE_URL}/functions/v1/process-payment`;
     const APK_URL       = 'https://expo.dev/artifacts/eas/8y96ZZgWxqngdptiNHRAJs.apk';
-    const COURTESY = 15, FIRST = 15, EXTRA = 20;
+    const COURTESY=15, FIRST=15, EXTRA=20;
 
-    let currentTicket  = null;
-    let timerInterval  = null;
+    let currentTicket = null;
+    let timerInterval = null;
+    let authTab = 'login';
+    let SESSION = null;
+
+    // Cargar sesión guardada
+    try {
+      const s = JSON.parse(localStorage.getItem('parkea_session')||'null');
+      if(s && s.access_token && s.expires_at > Date.now()/1000) SESSION = s;
+    } catch(e){}
 
     function pad(n){ return String(n).padStart(2,'0'); }
+    function calcCost(m){ if(m<=COURTESY)return 0; const b=Math.ceil((m-COURTESY)/60); return FIRST+Math.max(0,b-1)*EXTRA; }
+    function minutesSince(iso){ return Math.floor((Date.now()-new Date(iso).getTime())/60000); }
+    function getToken(){ return new URLSearchParams(window.location.search).get('token'); }
+    function isIOS(){ const ua=navigator.userAgent||''; return /iPad|iPhone|iPod/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1); }
 
-    function calcCost(mins){
-      if(mins <= COURTESY) return 0;
-      const billable = Math.ceil((mins - COURTESY) / 60);
-      return FIRST + Math.max(0, billable - 1) * EXTRA;
+    function authHeaders(token){
+      return { 'Content-Type':'application/json', 'apikey':SUPABASE_ANON,
+               ...(token ? {'Authorization':`Bearer ${token}`} : {}) };
     }
 
-    function minutesSince(iso){
-      return Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
+    // ── TIMER ──
+    function startTimer(entryAt){
+      function update(){
+        const secs=Math.floor((Date.now()-new Date(entryAt).getTime())/1000);
+        const mins=Math.floor(secs/60);
+        const hh=Math.floor(mins/60);
+        document.getElementById('timer').textContent=`${pad(hh)}:${pad(mins%60)}:${pad(secs%60)}`;
+        const cost=calcCost(mins);
+        const costEl=document.getElementById('cost');
+        if(mins<=COURTESY){
+          costEl.innerHTML=`<span style="color:#00C853;">$0</span> <span style="font-size:11px;font-weight:400;color:#555;">MXN</span>`;
+          const c=document.getElementById('courtesy');
+          c.style.display='inline-block'; c.textContent=`${COURTESY-mins} min de cortesía restantes`;
+        } else {
+          costEl.innerHTML=`$${cost} <span style="font-size:11px;font-weight:400;color:#555;">MXN</span>`;
+          document.getElementById('courtesy').style.display='none';
+        }
+        // Actualizar botón de pago
+        const btn=document.getElementById('btn-pay');
+        if(btn) btn.textContent=cost>0?`Pagar ahora — $${cost} MXN`:'Confirmar salida gratuita';
+      }
+      update();
+      timerInterval=setInterval(update,1000);
     }
 
-    function getToken(){
-      return new URLSearchParams(window.location.search).get('token');
-    }
+    // ── RENDER PAY SECTION ──
+    function renderPaySection(){
+      const ps=document.getElementById('pay-section');
+      if(!currentTicket){ ps.innerHTML=''; return; }
+      const cost=calcCost(minutesSince(currentTicket.entry_at));
+      const isFree=cost===0;
 
-    function isIOS(){
-      const ua = navigator.userAgent || navigator.vendor || window.opera || '';
-      return /iPad|iPhone|iPod/.test(ua) ||
-             (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    }
-
-    function formatCardNumber(val){
-      return val.replace(/\D/g,'').slice(0,16).replace(/(.{4})/g,'$1 ').trim();
-    }
-
-    function formatExpiry(val){
-      const c = val.replace(/\D/g,'').slice(0,4);
-      return c.length >= 3 ? c.slice(0,2)+'/'+c.slice(2) : c;
-    }
-
-    document.getElementById('card-number').addEventListener('input', function(){
-      this.value = formatCardNumber(this.value);
-      updatePayButton();
-    });
-    document.getElementById('card-expiry').addEventListener('input', function(){
-      this.value = formatExpiry(this.value);
-      updatePayButton();
-    });
-    document.getElementById('card-cvv').addEventListener('input', function(){
-      this.value = this.value.replace(/\D/g,'').slice(0,4);
-      updatePayButton();
-    });
-    document.getElementById('card-name').addEventListener('input', updatePayButton);
-
-    function isFormValid(){
-      if(!currentTicket) return false;
-      const cost = calcCost(minutesSince(currentTicket.entry_at));
-      if(cost === 0) return true;
-      const num  = document.getElementById('card-number').value.replace(/\s/g,'');
-      const name = document.getElementById('card-name').value.trim();
-      const exp  = document.getElementById('card-expiry').value;
-      const cvv  = document.getElementById('card-cvv').value;
-      const [month] = exp.split('/');
-      return num.length===16 && name.length>2 && exp.length===5 &&
-             parseInt(month)>=1 && parseInt(month)<=12 && cvv.length>=3;
-    }
-
-    function updatePayButton(){
-      if(!currentTicket) return;
-      const btn  = document.getElementById('btn-pay');
-      const cost = calcCost(minutesSince(currentTicket.entry_at));
-      if(cost === 0){
-        btn.textContent = 'CONFIRMAR SALIDA GRATUITA';
-        btn.disabled = false;
-      } else if(isFormValid()){
-        btn.textContent = `CONFIRMAR PAGO · $${cost} MXN`;
-        btn.disabled = false;
+      // Si hay sesión — mostrar formulario directo
+      if(SESSION){
+        let formHtml='';
+        if(!isFree){
+          formHtml=`
+            <div class="pay-form">
+              <div class="pay-form-title">Datos de tarjeta</div>
+              <div class="field"><label>Número de tarjeta</label>
+                <input type="tel" id="p-num" placeholder="0000 0000 0000 0000" maxlength="19" inputmode="numeric" oninput="fmtCard(this);chkPay()"/>
+              </div>
+              <div class="field"><label>Nombre en la tarjeta</label>
+                <input type="text" id="p-name" placeholder="Como aparece en la tarjeta" oninput="chkPay()"/>
+              </div>
+              <div class="field-row">
+                <div class="field"><label>Vencimiento</label>
+                  <input type="tel" id="p-exp" placeholder="MM/AA" maxlength="5" inputmode="numeric" oninput="fmtExp(this);chkPay()"/>
+                </div>
+                <div class="field"><label>CVV</label>
+                  <input type="tel" id="p-cvv" placeholder="123" maxlength="4" inputmode="numeric" oninput="this.value=this.value.replace(/\\D/g,'').slice(0,4);chkPay()"/>
+                </div>
+              </div>
+              <div class="secure-note">🔐 Pago seguro · Datos encriptados</div>
+            </div>`;
+        } else {
+          formHtml=`<div class="free-banner">
+            <div style="font-size:32px;margin-bottom:8px;">🎉</div>
+            <div style="color:#00C853;font-size:16px;font-weight:800;margin-bottom:4px;">Salida gratuita</div>
+            <div style="color:#555;font-size:12px;">Estás dentro del periodo de cortesía</div>
+          </div>`;
+        }
+        ps.innerHTML=`
+          ${formHtml}
+          <div class="error-box" id="pay-err"></div>
+          <button class="btn btn-yellow" id="btn-pay" onclick="handlePay()" ${!isFree?'disabled':''}>
+            ${isFree?'Confirmar salida gratuita':'Completa los datos de tarjeta'}
+          </button>`;
       } else {
-        btn.textContent = 'Completa los datos de tarjeta';
-        btn.disabled = true;
+        // Sin sesión — botón que abre modal
+        ps.innerHTML=`
+          <div style="background:#1A1A1A;border-radius:14px;padding:16px;margin-bottom:12px;border:1px solid #2C2C2C;text-align:center;">
+            <div style="font-size:11px;color:#555;margin-bottom:12px;">Inicia sesión para pagar y obtener tu QR de salida</div>
+            <button class="btn btn-yellow" onclick="openAuthModal()" style="margin-bottom:0;">
+              ${isFree?'Iniciar sesión para salir gratis':'Iniciar sesión para pagar'}
+            </button>
+          </div>
+          ${isIOS()?'':'<a href="'+APK_URL+'" class="btn btn-outline" style="text-decoration:none;text-align:center;">⬇ Descargar app Android</a>'}`;
+      }
+    }
+
+    // ── AUTH MODAL ──
+    function openAuthModal(){
+      document.getElementById('auth-modal').style.display='flex';
+    }
+    function closeAuthModal(){
+      document.getElementById('auth-modal').style.display='none';
+    }
+    function handleOverlayClick(e){
+      if(e.target.id==='auth-modal') closeAuthModal();
+    }
+    function switchAuthTab(tab){
+      authTab=tab;
+      document.getElementById('auth-login').style.display=tab==='login'?'block':'none';
+      document.getElementById('auth-register').style.display=tab==='register'?'block':'none';
+      document.getElementById('tab-login').classList.toggle('active',tab==='login');
+      document.getElementById('tab-register').classList.toggle('active',tab==='register');
+      document.getElementById('auth-btn').textContent=tab==='login'?'Entrar':'Crear cuenta';
+      document.getElementById('auth-err').style.display='none';
+    }
+
+    async function handleAuth(){
+      const btn=document.getElementById('auth-btn');
+      const errEl=document.getElementById('auth-err');
+      errEl.style.display='none';
+      btn.disabled=true;
+      btn.innerHTML='<span class="spinner-sm"></span>';
+
+      try {
+        let res, data;
+        if(authTab==='login'){
+          const email=document.getElementById('l-email').value.trim();
+          const pass=document.getElementById('l-pass').value;
+          if(!email||!pass){ throw new Error('Completa todos los campos'); }
+          res=await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`,{
+            method:'POST', headers:authHeaders(),
+            body:JSON.stringify({email,password:pass})
+          });
+          data=await res.json();
+          if(!res.ok) throw new Error('Correo o contraseña incorrectos');
+        } else {
+          const name=document.getElementById('r-name').value.trim();
+          const email=document.getElementById('r-email').value.trim();
+          const pass=document.getElementById('r-pass').value;
+          if(!name||!email||!pass){ throw new Error('Completa todos los campos'); }
+          if(pass.length<6){ throw new Error('La contraseña debe tener al menos 6 caracteres'); }
+          res=await fetch(`${SUPABASE_URL}/auth/v1/signup`,{
+            method:'POST', headers:authHeaders(),
+            body:JSON.stringify({email,password:pass,data:{full_name:name}})
+          });
+          data=await res.json();
+          if(!res.ok) throw new Error(data.error_description||data.msg||'Error al registrarse');
+          // Auto-login
+          const r2=await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`,{
+            method:'POST', headers:authHeaders(),
+            body:JSON.stringify({email,password:pass})
+          });
+          data=await r2.json();
+          if(!r2.ok) throw new Error('Cuenta creada. Inicia sesión.');
+        }
+
+        // Guardar sesión
+        SESSION=data;
+        localStorage.setItem('parkea_session',JSON.stringify({
+          access_token:data.access_token,
+          refresh_token:data.refresh_token,
+          expires_at:data.expires_at,
+          user:data.user
+        }));
+
+        // Vincular ticket al usuario
+        if(currentTicket && !currentTicket.user_id && data.user?.id){
+          await fetch(`${SUPABASE_URL}/rest/v1/tickets?qr_token=eq.${currentTicket.qr_token}&user_id=is.null`,{
+            method:'PATCH',
+            headers:{...authHeaders(data.access_token),'Prefer':'return=minimal'},
+            body:JSON.stringify({user_id:data.user.id})
+          });
+          currentTicket.user_id=data.user.id;
+        }
+
+        closeAuthModal();
+        renderPaySection();
+
+      } catch(e){
+        errEl.textContent=e.message||'Error de conexión';
+        errEl.style.display='block';
+        btn.disabled=false;
+        btn.textContent=authTab==='login'?'Entrar':'Crear cuenta';
+      }
+    }
+
+    // ── PAGO ──
+    function fmtCard(el){ el.value=el.value.replace(/\D/g,'').slice(0,16).replace(/(.{4})/g,'$1 ').trim(); }
+    function fmtExp(el){ const c=el.value.replace(/\D/g,'').slice(0,4); el.value=c.length>=3?c.slice(0,2)+'/'+c.slice(2):c; }
+    function chkPay(){
+      const num=(document.getElementById('p-num')?.value||'').replace(/\s/g,'');
+      const name=(document.getElementById('p-name')?.value||'').trim();
+      const exp=(document.getElementById('p-exp')?.value||'');
+      const cvv=(document.getElementById('p-cvv')?.value||'');
+      const [month]=(exp||'/').split('/');
+      const ok=num.length===16&&name.length>2&&exp.length===5&&parseInt(month)>=1&&parseInt(month)<=12&&cvv.length>=3;
+      const btn=document.getElementById('btn-pay');
+      if(btn){
+        btn.disabled=!ok;
+        const cost=calcCost(minutesSince(currentTicket.entry_at));
+        btn.textContent=ok?`Pagar ahora — $${cost} MXN`:'Completa los datos de tarjeta';
       }
     }
 
     async function handlePay(){
-      if(!currentTicket || !isFormValid()) return;
-      const btn   = document.getElementById('btn-pay');
-      const errEl = document.getElementById('pay-error');
-      errEl.style.display = 'none';
-      btn.disabled = true;
-      btn.innerHTML = '<span class="spinner-sm"></span> Procesando...';
+      if(!currentTicket||!SESSION) return;
+      const btn=document.getElementById('btn-pay');
+      const errEl=document.getElementById('pay-err');
+      if(errEl) errEl.style.display='none';
+      btn.disabled=true;
+      btn.innerHTML='<span class="spinner-sm"></span> Procesando...';
 
       try {
-        const res = await fetch(PAYMENT_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ticketId: currentTicket.id, paymentMethod: 'app' }),
+        const res=await fetch(PAYMENT_URL,{
+          method:'POST',
+          headers:{'Content-Type':'application/json','Authorization':`Bearer ${SESSION.access_token}`},
+          body:JSON.stringify({ticketId:currentTicket.id,paymentMethod:'app'})
         });
-        const json = await res.json();
-
+        const json=await res.json();
         if(!res.ok){
-          errEl.textContent = json.error ?? 'Error al procesar pago';
-          errEl.style.display = 'block';
-          btn.disabled = false;
-          updatePayButton();
+          if(errEl){ errEl.textContent=json.error??'Error al procesar pago'; errEl.style.display='block'; }
+          btn.disabled=false;
+          const cost=calcCost(minutesSince(currentTicket.entry_at));
+          btn.textContent=cost===0?'Confirmar salida gratuita':`Pagar ahora — $${cost} MXN`;
           return;
         }
-
-        const updated = await loadTicket(getToken());
-        showPaidState(updated ?? currentTicket, json.amount);
-
+        // Recargar ticket actualizado
+        const r2=await fetch(`${SUPABASE_URL}/rest/v1/tickets?qr_token=eq.${getToken()}&select=*`,
+          {headers:{'apikey':SUPABASE_ANON,'Authorization':`Bearer ${SESSION.access_token}`}});
+        const d2=await r2.json();
+        const updated=d2?.[0]??currentTicket;
+        if(timerInterval) clearInterval(timerInterval);
+        showPaidState(updated,json.amount);
       } catch(e){
-        errEl.textContent = 'Error de conexión. Intenta de nuevo.';
-        errEl.style.display = 'block';
-        btn.disabled = false;
-        updatePayButton();
+        if(errEl){ errEl.textContent='Error de conexión. Intenta de nuevo.'; errEl.style.display='block'; }
+        btn.disabled=false;
+        btn.textContent='Reintentar';
       }
     }
 
+    // ── PAID STATE ──
     function showPaidState(ticket, amount){
-      if(timerInterval) clearInterval(timerInterval);
-      document.getElementById('content').style.display    = 'none';
-      document.getElementById('paid-content').style.display = 'block';
-
-      document.getElementById('paid-spot').textContent   = ticket.spot_id ?? '—';
-      document.getElementById('paid-entry').textContent  = new Date(ticket.entry_at)
-        .toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' });
-      document.getElementById('paid-amount').textContent = `$${ticket.amount_mxn ?? amount ?? 0} MXN`;
-
-      const qrToken = ticket.qr_token;
-      document.getElementById('qr-token-display').textContent = qrToken ?? '';
-
-      const wrap = document.getElementById('qr-canvas');
-      wrap.innerHTML = '';
+      document.getElementById('content').style.display='none';
+      document.getElementById('paid-content').style.display='block';
+      document.getElementById('paid-spot').textContent=ticket.spot_id??'—';
+      document.getElementById('paid-entry').textContent=new Date(ticket.entry_at)
+        .toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+      document.getElementById('paid-amount').textContent=`$${ticket.amount_mxn??amount??0} MXN`;
+      const qrToken=ticket.qr_token;
+      document.getElementById('qr-token-display').textContent=qrToken??'';
+      const wrap=document.getElementById('qr-canvas'); wrap.innerHTML='';
       if(qrToken){
-        new QRCode(wrap, {
-          text: qrToken,
-          width: 180,
-          height: 180,
-          colorDark: '#0A0A0A',
-          colorLight: '#FFFFFF',
-          correctLevel: QRCode.CorrectLevel.M,
-        });
+        new QRCode(wrap,{text:qrToken,width:180,height:180,colorDark:'#0A0A0A',colorLight:'#FFFFFF',correctLevel:QRCode.CorrectLevel.M});
       }
     }
 
+    // ── LOAD TICKET ──
     async function loadTicket(token){
-      const res = await fetch(
-        `${SUPABASE_URL}/rest/v1/tickets?qr_token=eq.${token}&select=*`,
-        { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` }}
-      );
-      const data = await res.json();
-      return data && data.length > 0 ? data[0] : null;
+      const headers={'apikey':SUPABASE_ANON,'Authorization':`Bearer ${SUPABASE_ANON}`};
+      const res=await fetch(`${SUPABASE_URL}/rest/v1/tickets?qr_token=eq.${token}&select=*`,{headers});
+      const data=await res.json();
+      return data?.length>0?data[0]:null;
     }
 
-    function showError(title, sub){
-      document.getElementById('loading').style.display      = 'none';
-      document.getElementById('error-title').textContent    = title;
-      document.getElementById('error-sub').textContent      = sub;
-      document.getElementById('error-state').style.display  = 'block';
+    function showError(title,sub){
+      document.getElementById('loading').style.display='none';
+      document.getElementById('error-title').textContent=title;
+      document.getElementById('error-sub').textContent=sub;
+      document.getElementById('error-state').style.display='block';
     }
 
-    function startTimer(entryAt){
-      function update(){
-        const totalSecs = Math.floor((Date.now() - new Date(entryAt).getTime()) / 1000);
-        const mins = Math.floor(totalSecs / 60);
-        const secs = totalSecs % 60;
-        document.getElementById('timer').textContent =
-          `${pad(Math.floor(mins/60))}:${pad(mins%60)}:${pad(secs)}`;
-        const cost = calcCost(mins);
-        const costEl = document.getElementById('cost');
-        if(mins <= COURTESY){
-          costEl.innerHTML = `<span style="color:#00C853;">$0</span> <span style="font-size:11px;font-weight:400;color:#555;">MXN</span>`;
-          const c = document.getElementById('courtesy');
-          c.style.display = 'inline-block';
-          c.textContent = `${COURTESY - mins} min de cortesía restantes`;
-        } else {
-          costEl.innerHTML = `$${cost} <span style="font-size:11px;font-weight:400;color:#555;">MXN</span>`;
-          document.getElementById('courtesy').style.display = 'none';
-        }
-        updatePayButton();
-      }
-      update();
-      timerInterval = setInterval(update, 1000);
-    }
-
+    // ── INIT ──
     async function init(){
-      const token = getToken();
-      const error = new URLSearchParams(window.location.search).get('error');
+      const token=getToken();
+      const error=new URLSearchParams(window.location.search).get('error');
 
-      if(error === 'full'){
-        showError('Sin lugares disponibles', 'El estacionamiento está lleno. Intenta más tarde.');
-        return;
-      }
+      if(error==='full'){ showError('Sin lugares disponibles','El estacionamiento está lleno. Intenta más tarde.'); return; }
 
       if(!token){
-        document.getElementById('loading-msg').textContent = 'Creando tu boleto...';
-        window.location.href = 'https://pjpquwrrmjfzdcicvssm.supabase.co/functions/v1/register-entry';
+        document.getElementById('loading-msg').textContent='Creando tu boleto...';
+        window.location.href='https://pjpquwrrmjfzdcicvssm.supabase.co/functions/v1/register-entry';
         return;
       }
 
       try {
-        const ticket = await loadTicket(token);
-        if(!ticket){
-          showError('Boleto no encontrado', 'Este enlace no es válido o el ticket ya no está activo.');
+        const ticket=await loadTicket(token);
+        if(!ticket){ showError('Boleto no encontrado','Este enlace no es válido o el ticket ya no está activo.'); return; }
+
+        currentTicket=ticket;
+
+        // Si ya está pagado
+        if(ticket.status==='paid'){
+          document.getElementById('loading').style.display='none';
+          showPaidState(ticket,ticket.amount_mxn);
           return;
         }
 
-        currentTicket = ticket;
-
-        // Ya pagado — mostrar QR directamente
-        if(ticket.status === 'paid'){
-          document.getElementById('loading').style.display = 'none';
-          showPaidState(ticket, ticket.amount_mxn);
-          return;
+        // Vincular automáticamente si hay sesión
+        if(SESSION?.user?.id && !ticket.user_id){
+          await fetch(`${SUPABASE_URL}/rest/v1/tickets?qr_token=eq.${token}&user_id=is.null`,{
+            method:'PATCH',
+            headers:{...authHeaders(SESSION.access_token),'Prefer':'return=minimal'},
+            body:JSON.stringify({user_id:SESSION.user.id})
+          });
+          currentTicket.user_id=SESSION.user.id;
         }
 
-        document.getElementById('spot').textContent       = ticket.spot_id ?? '—';
-        document.getElementById('token-val').textContent  = ticket.qr_token;
-        document.getElementById('entry-val').textContent  = new Date(ticket.entry_at)
-          .toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
-        document.getElementById('btn-app').href           = `parkea://ticket?token=${token}`;
-        document.getElementById('btn-app-ios').href       = `parkea://ticket?token=${token}`;
-        document.getElementById('btn-apk').href           = APK_URL;
+        document.getElementById('spot').textContent=ticket.spot_id??'—';
+        document.getElementById('token-val').textContent=ticket.qr_token;
+        document.getElementById('entry-val').textContent=new Date(ticket.entry_at)
+          .toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
 
-        if(isIOS()){
-          document.getElementById('pay-section').style.display = 'block';
-          const cost = calcCost(minutesSince(ticket.entry_at));
-          if(cost === 0){
-            document.getElementById('free-banner').style.display    = 'block';
-            document.getElementById('card-form-wrap').style.display = 'none';
-          }
-          updatePayButton();
-        } else {
-          document.getElementById('cta-app').style.display     = 'block';
-          document.getElementById('cta-android').style.display = 'block';
-        }
+        document.getElementById('loading').style.display='none';
+        document.getElementById('content').style.display='block';
 
-        document.getElementById('loading').style.display  = 'none';
-        document.getElementById('content').style.display  = 'block';
+        renderPaySection();
         startTimer(ticket.entry_at);
 
       } catch(e){
-        showError('Error de conexión', 'No se pudo cargar el boleto. Intenta de nuevo.');
+        showError('Error de conexión','No se pudo cargar el boleto. Intenta de nuevo.');
       }
     }
 
