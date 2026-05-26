@@ -511,45 +511,188 @@ async function loadPay(){
   const data=await res.json();
   currentTicket=data?.length>0?data[0]:null;
 
-  const header=`<div style="padding:56px 0 4px;">
-    <div class="h-sub">Checkout · Solo en app</div>
-    <div style="color:#FFF;font-size:18px;font-weight:700;margin-top:2px;">Pagar <span style="color:#FFE118">estancia</span></div>
-  </div>`;
-
   if(!currentTicket){
-    document.getElementById('pay-content').innerHTML=`${header}
-      <div class="empty-state">
-        <div class="empty-icon">💳</div>
-        <div class="empty-title">Sin ticket activo</div>
-        <div class="empty-sub">Escanea el QR del estacionamiento<br/>para registrar tu entrada</div>
-      </div>`;
+    renderCardManager();
     return;
   }
-
   if(currentTicket.status==='paid'||currentTicket.status==='exited'){
     goTab('ticket');
     return;
   }
+  renderPayForm();
+}
 
-  const cost=calcCost(mSince(currentTicket.entry_at));
+// ── GESTOR DE TARJETA GUARDADA ──
+function getSavedCard(){ try{ return JSON.parse(localStorage.getItem('parkea_card')||'null'); }catch(e){return null;} }
+function saveCard(card){ localStorage.setItem('parkea_card', JSON.stringify(card)); }
+function deleteCard(){ localStorage.removeItem('parkea_card'); }
+
+function renderCardManager(){
+  const saved = getSavedCard();
+  const header=`<div style="padding:56px 0 4px;">
+    <div class="h-sub">Métodos de pago</div>
+    <div style="color:#FFF;font-size:20px;font-weight:800;margin-top:2px;">Mi <span style="color:#FFE118">tarjeta</span></div>
+  </div>`;
+
+  if(saved){
+    // Mostrar tarjeta guardada
+    const masked = '•••• •••• •••• ' + saved.num.replace(/\s/g,'').slice(-4);
+    const brand = getCardBrand(saved.num);
+    document.getElementById('pay-content').innerHTML=`
+      ${header}
+      <div style="background:#202020;border-radius:20px;padding:20px;margin-bottom:14px;border:1.5px solid #FFE11833;position:relative;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
+          <div style="color:#555;font-size:10px;letter-spacing:2px;text-transform:uppercase;">Tarjeta guardada</div>
+          <div style="background:#00C85322;border:1px solid #00C85344;border-radius:8px;padding:3px 10px;color:#00C853;font-size:10px;font-weight:700;">✓ ACTIVA</div>
+        </div>
+        <div style="color:#FFF;font-size:22px;font-weight:700;letter-spacing:3px;margin-bottom:12px;font-family:'Courier New',monospace;">${masked}</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="color:#555;font-size:9px;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;">Titular</div>
+            <div style="color:#FFF;font-size:13px;font-weight:600;">${saved.name}</div>
+          </div>
+          <div>
+            <div style="color:#555;font-size:9px;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;">Vence</div>
+            <div style="color:#FFF;font-size:13px;font-weight:600;">${saved.exp}</div>
+          </div>
+          <div style="font-size:28px;">${brand}</div>
+        </div>
+      </div>
+      <div style="background:#1A1A1A;border-radius:14px;padding:14px;margin-bottom:14px;border:1px solid #2C2C2C;display:flex;align-items:center;gap:12px;">
+        <div style="font-size:20px;">ℹ️</div>
+        <div style="color:#555;font-size:12px;line-height:18px;">Esta tarjeta se usará automáticamente cuando tengas un ticket activo para pagar</div>
+      </div>
+      <button class="btn btn-outline" onclick="renderEditCard()" style="margin-bottom:0;">Cambiar tarjeta</button>`;
+  } else {
+    // No hay tarjeta — mostrar formulario para agregar
+    document.getElementById('pay-content').innerHTML=`
+      ${header}
+      <div style="background:#1A1A1A;border-radius:18px;padding:20px;margin-bottom:14px;border:1px solid #2C2C2C;text-align:center;">
+        <div style="font-size:36px;margin-bottom:10px;">💳</div>
+        <div style="color:#FFF;font-size:15px;font-weight:700;margin-bottom:6px;">Sin tarjeta guardada</div>
+        <div style="color:#555;font-size:12px;line-height:18px;">Agrega tu tarjeta para pagar más rápido la próxima vez</div>
+      </div>
+      ${buildCardForm(false)}
+      <div class="error-box" id="pay-err"></div>
+      <button class="btn btn-yellow" id="btn-save-card" onclick="handleSaveCard()">Guardar tarjeta</button>`;
+    initCardInputs();
+  }
+}
+
+function renderEditCard(){
+  const header=`<div style="padding:56px 0 4px;">
+    <div class="h-sub">Métodos de pago</div>
+    <div style="color:#FFF;font-size:20px;font-weight:800;margin-top:2px;">Cambiar <span style="color:#FFE118">tarjeta</span></div>
+  </div>`;
+  document.getElementById('pay-content').innerHTML=`
+    ${header}
+    ${buildCardForm(false)}
+    <div class="error-box" id="pay-err"></div>
+    <button class="btn btn-yellow" id="btn-save-card" onclick="handleSaveCard()">Guardar tarjeta</button>
+    <button class="btn btn-outline" onclick="handleDeleteCard()">Eliminar tarjeta guardada</button>`;
+  initCardInputs();
+}
+
+function buildCardForm(showDelete){
+  const saved = getSavedCard();
+  return `<div class="pay-form">
+    <div class="pay-form-title">Datos de tarjeta</div>
+    <div class="field"><label>Número de tarjeta</label>
+      <input type="tel" id="p-num" placeholder="0000 0000 0000 0000" maxlength="19" inputmode="numeric"
+        value="${saved?saved.num:''}" oninput="fmtCard(this);chkSave()"/>
+    </div>
+    <div class="field"><label>Nombre en la tarjeta</label>
+      <input type="text" id="p-name" placeholder="Como aparece en la tarjeta"
+        value="${saved?saved.name:''}" oninput="chkSave()"/>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Vencimiento</label>
+        <input type="tel" id="p-exp" placeholder="MM/AA" maxlength="5" inputmode="numeric"
+          value="${saved?saved.exp:''}" oninput="fmtExp(this);chkSave()"/>
+      </div>
+      <div class="field"><label>CVV</label>
+        <input type="tel" id="p-cvv" placeholder="123" maxlength="4" inputmode="numeric"
+          value="${saved?saved.cvv:''}" oninput="this.value=this.value.replace(/\D/g,'').slice(0,4);chkSave()"/>
+      </div>
+    </div>
+    <div class="secure-note">🔐 Datos guardados localmente en tu dispositivo</div>
+  </div>`;
+}
+
+function initCardInputs(){
+  // Trigger chkSave after render to set initial button state
+  setTimeout(chkSave, 50);
+}
+
+function getCardBrand(num){
+  const n=num.replace(/\s/g,'');
+  if(n.startsWith('4')) return '💙'; // Visa
+  if(n.startsWith('5')||n.startsWith('2')) return '🟠'; // Mastercard
+  if(n.startsWith('3')) return '🟢'; // Amex
+  return '💳';
+}
+
+function chkSave(){
+  const num=(document.getElementById('p-num')?.value||'').replace(/\s/g,'');
+  const name=(document.getElementById('p-name')?.value||'').trim();
+  const exp=(document.getElementById('p-exp')?.value||'');
+  const cvv=(document.getElementById('p-cvv')?.value||'');
+  const [month]=(exp||'/').split('/');
+  const ok=num.length===16&&name.length>2&&exp.length===5&&parseInt(month)>=1&&parseInt(month)<=12&&cvv.length>=3;
+  const btn=document.getElementById('btn-save-card');
+  if(btn){ btn.disabled=!ok; btn.style.opacity=ok?'1':'0.5'; }
+}
+
+function handleSaveCard(){
+  const num=document.getElementById('p-num').value;
+  const name=document.getElementById('p-name').value.trim();
+  const exp=document.getElementById('p-exp').value;
+  const cvv=document.getElementById('p-cvv').value;
+  saveCard({num,name,exp,cvv});
+  renderCardManager();
+}
+
+function handleDeleteCard(){
+  deleteCard();
+  renderCardManager();
+}
+
+// ── FORMULARIO DE PAGO (con ticket activo) ──
+function renderPayForm(){
+  const ticket=currentTicket;
+  const cost=calcCost(mSince(ticket.entry_at));
   const isFree=cost===0;
-  let formHtml='';
+  const saved=getSavedCard();
 
+  const header=`<div style="padding:56px 0 4px;">
+    <div class="h-sub">Checkout</div>
+    <div style="color:#FFF;font-size:18px;font-weight:700;margin-top:2px;">Pagar <span style="color:#FFE118">estancia</span></div>
+  </div>`;
+
+  let formHtml='';
   if(isFree){
     formHtml=`<div class="free-banner">
-      <div style="font-size:36px;margin-bottom:10px;">🎉</div>
-      <div style="color:#00C853;font-size:16px;font-weight:800;margin-bottom:6px;">Salida gratuita</div>
-      <div style="color:#555;font-size:12px;line-height:18px;">Estás dentro del periodo de cortesía.<br/>No se requiere pago.</div>
+      <div style="font-size:32px;margin-bottom:8px;">🎉</div>
+      <div style="color:#00C853;font-size:16px;font-weight:800;margin-bottom:4px;">Salida gratuita</div>
+      <div style="color:#555;font-size:12px;">Estás dentro del periodo de cortesía</div>
     </div>`;
-  } else {
+  } else if(saved){
+    // Tarjeta guardada — mostrar resumen y pagar directo
+    const masked='•••• •••• •••• '+saved.num.replace(/\s/g,'').slice(-4);
     formHtml=`
-      <div class="card-indicator">
-        <span style="font-size:28px;">💳</span>
-        <div><div style="color:#FFF;font-size:14px;font-weight:700;">Pago con tarjeta</div>
-        <div style="color:#555;font-size:11px;margin-top:2px;">Débito o crédito · Procesado de forma segura</div></div>
-      </div>
+      <div style="background:#1A1A1A;border-radius:14px;padding:16px;margin-bottom:14px;border:1.5px solid #1C6EF733;display:flex;align-items:center;gap:14px;">
+        <span style="font-size:28px;">${getCardBrand(saved.num)}</span>
+        <div style="flex:1;">
+          <div style="color:#FFF;font-size:14px;font-weight:700;">${masked}</div>
+          <div style="color:#555;font-size:11px;margin-top:2px;">${saved.name} · Vence ${saved.exp}</div>
+        </div>
+        <div style="background:#1C6EF722;border:1px solid #1C6EF744;border-radius:8px;padding:3px 8px;color:#1C6EF7;font-size:10px;font-weight:700;">GUARDADA</div>
+      </div>`;
+  } else {
+    // Sin tarjeta guardada — mostrar formulario completo
+    formHtml=`
       <div class="pay-form">
-        <div class="section-lbl">Datos de tarjeta</div>
+        <div class="pay-form-title">Datos de tarjeta</div>
         <div class="field"><label>Número de tarjeta</label>
           <input type="tel" id="p-num" placeholder="0000 0000 0000 0000" maxlength="19" inputmode="numeric" oninput="fmtCard(this);chkPay()"/>
         </div>
@@ -561,10 +704,14 @@ async function loadPay(){
             <input type="tel" id="p-exp" placeholder="MM/AA" maxlength="5" inputmode="numeric" oninput="fmtExp(this);chkPay()"/>
           </div>
           <div class="field"><label>CVV</label>
-            <input type="tel" id="p-cvv" placeholder="CVV" maxlength="4" inputmode="numeric" oninput="this.value=this.value.replace(/\D/g,'').slice(0,4);chkPay()"/>
+            <input type="tel" id="p-cvv" placeholder="123" maxlength="4" inputmode="numeric" oninput="this.value=this.value.replace(/\D/g,'').slice(0,4);chkPay()"/>
           </div>
         </div>
-        <div class="secure-note">🔐 Pago seguro · Datos encriptados</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:10px;">
+          <input type="checkbox" id="save-card-chk" style="width:16px;height:16px;accent-color:#FFE118;"/>
+          <label for="save-card-chk" style="color:#555;font-size:12px;cursor:pointer;">Guardar tarjeta para próximas visitas</label>
+        </div>
+        <div class="secure-note" style="margin-top:6px;">🔐 Pago seguro · Datos encriptados</div>
       </div>`;
   }
 
@@ -572,9 +719,9 @@ async function loadPay(){
     ${header}
     <div class="summary-card" style="margin-top:14px;">
       <div class="section-lbl">Resumen</div>
-      <div class="info-row"><span class="info-key">Cajón</span><span class="info-val">${currentTicket.spot_id??'—'}</span></div>
-      <div class="info-row"><span class="info-key">Entrada</span><span class="info-val">${fmtTime(currentTicket.entry_at)}</span></div>
-      <div class="info-row"><span class="info-key">Tiempo</span><span class="info-val">${pad(Math.floor(mSince(currentTicket.entry_at)/60))}h ${pad(mSince(currentTicket.entry_at)%60)}m</span></div>
+      <div class="info-row"><span class="info-key">Cajón</span><span class="info-val">${ticket.spot_id??'—'}</span></div>
+      <div class="info-row"><span class="info-key">Entrada</span><span class="info-val">${fmtTime(ticket.entry_at)}</span></div>
+      <div class="info-row"><span class="info-key">Tiempo</span><span class="info-val">${pad(Math.floor(mSince(ticket.entry_at)/60))}h ${pad(mSince(ticket.entry_at)%60)}m</span></div>
       <div class="total-row">
         <span class="total-lbl">Total</span>
         <span class="total-val" style="color:${isFree?'#00C853':'#FFE118'}">${isFree?'GRATIS':'$'+cost+' MXN'}</span>
@@ -582,13 +729,14 @@ async function loadPay(){
     </div>
     ${formHtml}
     <div class="error-box" id="pay-err"></div>
-    <button class="btn btn-yellow" id="btn-confirm" onclick="confirmPay()" ${!isFree?'disabled':''}>
-      ${isFree?'CONFIRMAR SALIDA GRATUITA':'Completa los datos de tarjeta'}
+    <button class="btn btn-yellow" id="btn-confirm" onclick="confirmPay()" ${(!isFree&&!saved)?'disabled':''}>
+      ${isFree?'CONFIRMAR SALIDA GRATUITA':saved?`PAGAR $${cost} MXN`:'Completa los datos de tarjeta'}
     </button>`;
 }
 
 function fmtCard(el){ el.value=el.value.replace(/\D/g,'').slice(0,16).replace(/(.{4})/g,'$1 ').trim(); }
 function fmtExp(el){ const c=el.value.replace(/\D/g,'').slice(0,4); el.value=c.length>=3?c.slice(0,2)+'/'+c.slice(2):c; }
+
 function chkPay(){
   const num=(document.getElementById('p-num')?.value||'').replace(/\s/g,'');
   const name=(document.getElementById('p-name')?.value||'').trim();
@@ -597,22 +745,54 @@ function chkPay(){
   const [month]=(exp||'/').split('/');
   const ok=num.length===16&&name.length>2&&exp.length===5&&parseInt(month)>=1&&parseInt(month)<=12&&cvv.length>=3;
   const btn=document.getElementById('btn-confirm');
-  if(btn){btn.disabled=!ok; const cost=calcCost(mSince(currentTicket.entry_at)); btn.textContent=ok?`CONFIRMAR PAGO · $${cost} MXN`:'Completa los datos de tarjeta';}
+  if(btn){
+    btn.disabled=!ok;
+    const cost=calcCost(mSince(currentTicket.entry_at));
+    btn.textContent=ok?`PAGAR $${cost} MXN`:'Completa los datos de tarjeta';
+  }
 }
 
 async function confirmPay(){
   const btn=document.getElementById('btn-confirm');
   const errEl=document.getElementById('pay-err');
-  errEl.style.display='none'; btn.disabled=true; btn.innerHTML='<span class="spinner-sm"></span> Procesando...';
+  if(errEl) errEl.style.display='none';
+  btn.disabled=true;
+  btn.innerHTML='<span class="spinner-sm"></span> Procesando...';
+
+  // Guardar tarjeta si el checkbox está marcado
+  const saveChk=document.getElementById('save-card-chk');
+  if(saveChk?.checked){
+    const num=document.getElementById('p-num')?.value;
+    const name=document.getElementById('p-name')?.value.trim();
+    const exp=document.getElementById('p-exp')?.value;
+    const cvv=document.getElementById('p-cvv')?.value;
+    if(num&&name&&exp&&cvv) saveCard({num,name,exp,cvv});
+  }
+
   try{
-    const res=await fetch(PAYMENT_URL,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${SESSION.access_token}`},body:JSON.stringify({ticketId:currentTicket.id,paymentMethod:'app'})});
+    const res=await fetch(PAYMENT_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${SESSION.access_token}`},
+      body:JSON.stringify({ticketId:currentTicket.id,paymentMethod:'app'})
+    });
     const json=await res.json();
-    if(!res.ok){errEl.textContent=json.error??'Error al procesar pago';errEl.style.display='block';btn.disabled=false;chkPay();return;}
+    if(!res.ok){
+      if(errEl){errEl.textContent=json.error??'Error al procesar pago';errEl.style.display='block';}
+      btn.disabled=false;
+      const cost=calcCost(mSince(currentTicket.entry_at));
+      btn.textContent=`PAGAR $${cost} MXN`;
+      return;
+    }
     const r2=await fetch(`${SUPABASE_URL}/rest/v1/tickets?id=eq.${currentTicket.id}&select=*`,{headers:authH()});
     const d2=await r2.json(); currentTicket=d2[0]??currentTicket;
     goTab('ticket');
-  }catch(e){errEl.textContent='Error de conexión';errEl.style.display='block';btn.disabled=false;chkPay();}
+  }catch(e){
+    if(errEl){errEl.textContent='Error de conexión';errEl.style.display='block';}
+    btn.disabled=false;
+    btn.textContent='Reintentar';
+  }
 }
+
 
 // ══════════════════════════════════════
 // PAID QR — igual que ticket.tsx paid
