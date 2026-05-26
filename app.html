@@ -516,7 +516,7 @@ async function loadPay(){
     return;
   }
   if(currentTicket.status==='paid'||currentTicket.status==='exited'){
-    goTab('ticket');
+    renderCardManager(); // en vez de goTab('ticket')
     return;
   }
   renderPayForm();
@@ -785,6 +785,9 @@ async function confirmPay(){
     }
     const r2=await fetch(`${SUPABASE_URL}/rest/v1/tickets?id=eq.${currentTicket.id}&select=*`,{headers:authH()});
     const d2=await r2.json(); currentTicket=d2[0]??currentTicket;
+    const paidTicket=currentTicket;
+    currentTicket=null; // limpiar para que Pay muestre gestor de tarjetas
+    renderPaid(paidTicket);
     goTab('ticket');
   }catch(e){
     if(errEl){errEl.textContent='Error de conexión';errEl.style.display='block';}
